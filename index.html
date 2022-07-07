@@ -1,0 +1,1791 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="Description" content="Put your description here." />
+    <base href="/" />
+
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: sans-serif;
+        background-color: #ededed;
+        --r-main-font-size: 24px;
+        --r-heading-margin: 20px 0 12px 0;
+      }
+
+      .slides {
+        width: 75% !important;
+      }
+
+      .container {
+        top: 0 !important;
+        display: flex !important;
+        flex-direction: row !important;
+      }
+      .column {
+        display: flex;
+        flex-direction: column;
+      }
+      .row {
+        display: flex;
+        flex-direction: row;
+      }
+
+      ul {
+        width: 100%;
+      }
+
+      section {
+        text-align: left;
+      }
+
+      .popover {
+        position: absolute;
+        background-color: #4d4d4d;
+        padding: 1rem 2rem;
+        box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+        border-radius: 10px;
+        width: auto;
+        transform: translate(16px, -15px);
+      }
+      .popover:after {
+        content: "";
+        position: absolute;
+        top: 6px;
+        left: -8px;
+        border-style: solid;
+        border-width: 18px 12px 0;
+        border-color: #4d4d4d transparent;
+        display: block;
+        width: 0;
+        z-index: 1;
+        transform: translate(-50%, 50%) rotate(90deg);
+      }
+
+      .popover .hljs-meta,
+      .popover .hljs-class,
+      .popover .hljs-keyword,
+      .popover .hljs-string,
+      .popover .hljs-title {
+        color: rgb(221, 221, 221) !important;
+        font-weight: normal;
+      }
+
+      .reveal pre code {
+        max-height: 800px !important;
+      }
+
+      .dna {
+        background-color: green;
+      }
+      .zome {
+        background-color: blue;
+      }
+      .coordinator-zomes {
+        background-color: lightblue;
+      }
+
+      .dna,
+      .cell,
+      .zome,
+      .coordinator-zomes,
+      .source-chain,
+      .happ-bundle,
+      .box,
+      .dna-bundle,
+      .dht-shard,
+      .conductor,
+      .happ {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px;
+        border-width: 3px;
+        border-color: rgb(209, 209, 209);
+        border-style: solid;
+      }
+    </style>
+    <link rel="stylesheet" href="/node_modules/reveal.js/dist/reveal.css" />
+
+    <link
+      rel="stylesheet"
+      href="/node_modules/reveal.js/dist/theme/black.css"
+    />
+    <link
+      rel="stylesheet"
+      href="/node_modules/reveal.js/plugin/highlight/monokai.css"
+    />
+    <title>Holochain Lesson 5</title>
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section>
+          <h1>Capability Tokens & P2P</h1>
+        </section>
+
+        <section>
+          <h3>Zome Calls</h3>
+
+          <li class="fragment fade-in-then-semi-out">
+            Zome calls have a unified security model, that protects all zome
+            calls independently of where they originated
+          </li>
+          <li class="fragment fade-in-then-semi-out">
+            When the conductor receives a zome call request, it checks whether
+            the zome call complies with the security checks:
+
+            <ul>
+              <li class="fragment fade-in-then-semi-out">
+                If the call is signed by the agent with the public key for the
+                cell, the call is accepted and executed
+              </li>
+              <li class="fragment fade-in-then-semi-out">
+                If not, the conductor looks up the source chain for that cell
+                for capability tokens for the requested function
+                <ul>
+                  <li class="fragment fade-in-then-semi-out">
+                    If some capability token allows the request, it is executed
+                  </li>
+                  <li class="fragment fade-in-then-semi-out">
+                    Otherwise, the request is rejected
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+        </section>
+
+        <section>
+          <h3>Capability Tokens (I)</h3>
+
+          <li class="fragment fade-in-then-semi-out">
+            Private entries called "Capability Grants" that grant authorization to execute zome calls by sources
+            external to the cell
+          </li>
+          <li class="fragment fade-in-then-semi-out">
+            Can be created as any other entry, at any point in time
+          </li>
+          <li class="fragment fade-in-then-semi-out">
+            When they are deleted, that grant is not longer taken into
+            account
+          </li>
+          <li class="fragment fade-in-then-semi-out">
+            This means that the cell is always in control of the grants that
+            it makes to external sources
+          </li>
+        </section>
+
+        <section>
+          <h3>Capability Tokens (II)</h3>
+
+          <h4>Types</h4>
+
+          
+          <li class="fragment fade-in-then-semi-out">
+            Transferable: any source that knows a specific secret
+            <ul>
+              <li class="fragment fade-in-then-semi-out">
+                The zome call must carry a secret
+              </li>
+              <li class="fragment fade-in-then-semi-out">
+                Only the calls that carry the secret specified in the capability token will be executed
+              </li>
+              <li class="fragment fade-in-then-semi-out">
+                The secret can be stored in the source chain of the caller with a "Capability Claim" entry
+
+                <ul>
+                  <li class="fragment fade-in-then-semi-out">
+                    Counterparty to "Capability Grant"
+                  </li>
+                  <li class="fragment fade-in-then-semi-out">
+                    Private entry, not used in the security checks 
+                  </li>
+
+                  <li class="fragment fade-in-then-semi-out">
+                    Only for convenience
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+
+          <li class="fragment fade-in-then-semi-out">
+            Assigned to specific agents
+            <ul>
+              <li class="fragment fade-in-then-semi-out">
+                The zome call must carry the agent public key of the caller and
+                its signature and a capbility secret
+              </li>
+              <li class="fragment fade-in-then-semi-out">
+                Only the calls that carry the secret specified and are made by one of the agents specified in the capability token can make the call
+              </li>
+            </ul>
+          </li>
+
+          <li class="fragment fade-in-then-semi-out">
+            Unrestricted: disable security checks
+            <ul>
+              <li class="fragment fade-in-then-semi-out">
+                Any call to the function coming from any source will be executed
+              </li>
+            </ul>
+          </li>
+          
+        </section>
+
+        <section>
+          <h3>Capability Tokens (III)</h3>
+
+            <pre
+              class="fragment fade-in"
+            ><code class="rust" data-noescape><span class="fragment fade-in-then-semi-out">use hdk::prelude::*;
+
+<span class="fragment fade-in">#[hdk_extern]
+fn zome_function_a(input: String) -> ExternResult&lt;ActionHash&gt; {
+  <span class="fragment fade-in">// Create</span>
+  <span class="fragment fade-in">// Create links</span>
+  <span class="fragment fade-in">// Query</span>
+  <span class="fragment fade-in">// ...</span>
+}
+</span>
+                
+
+<span class="fragment fade-in-then-semi-out">#[hdk_extern]
+fn allow_agent_to_call_zome_function_a(authorized_agent: AgentPubkey) -> ExternResult&lt;()&gt; {
+
+  let zome_name = zome_info()?.name;
+  let function_name = FunctionName(String::from("zome_function_a");
+
+  let mut functions: BTreeSet&lt;(ZomeName, FunctionName)&gt; = BTreeSet::new();
+  functions.insert((zome_name, function_name));
+
+  let mut assignees: BTreeSet&lt;AgentPubkey&gt; = BTreeSet::new();
+  assignees.insert(authorized_agent);
+
+  let access = CapAccess::Assigned {
+    secret: create_password(),
+    assignees
+  };
+
+  let capability_grant = CapGrantEntry {    
+    tag: String::from("zome_func"),
+    access,
+    functions
+  };
+
+  create_cap_grant(capability_grant)?;
+
+  Ok(())
+}
+</span>
+
+<span class="fragment fade-in">#[hdk_entry_helper]
+// We only need a string
+struct Anchor(String);</span>
+  
+<span class="fragment fade-in">#[hdk_entry_defs]
+#[unit_enum(UnitEntryTypes)]
+enum EntryTypes { 
+  Comment(Comment),
+  Anchor(Anchor),
+}</span>
+
+<span class="fragment fade-in">#[hdk_link_types]
+enum LinkTypes { 
+  AnchorToComment,
+}</span>
+
+</span></code></pre>
+
+            <pre
+              class="fragment fade-in"
+              style="margin-left: 16px"
+            ><code class="rust" data-noescape><span class="fragment fade-in-then-semi-out">#[hdk_extern]
+fn create_comment(comment: Comment) -> ExternResult&lt;ActionHash&gt; {
+  <span class="fragment fade-in">let comment_action_hash = create_entry(EntryTypes::Comment(comment))?; // Create comment as always</span>
+
+  <span class="fragment fade-in">let anchor = Anchor(String::from("all_comments"));</span>
+
+  <span class="fragment fade-in">let action_hash<span class="fragment fade-in-then-out popover">This hash is not deterministic: it will be different every time this function is executed</span> = create_entry(EntryTypes::Anchor(anchor))?;</span><span class="fragment fade-in"> // Create the anchor entry</span>
+  
+  <span class="fragment fade-in">let anchor_hash <span class="fragment fade-in-then-out popover">Hash is deterministic: will be the same independently of which cells executes this function</span>= hash_entry(anchor)?;  </span> <span class="fragment fade-in">// This hash is deterministic</span>
+
+  <span class="fragment fade-in">let all_comments_anchor =  anchor(LinkTypes::AnchorToComment)?;</span>
+
+  <span class="fragment fade-in">create_link(
+    <span class="fragment fade-in">anchor_hash, <span class="fragment fade-in">// Base hash</span></span>
+    <span class="fragment fade-in">comment_action_hash, <span class="fragment fade-in">// Target hash</span></span>
+    <span class="fragment fade-in">LinkTypes::AnchorToComment,<span class="fragment fade-in">// Link Type</span></span>
+    <span class="fragment fade-in">()<span class="fragment fade-in"> // Link tag</span></span>
+  )?;</span>
+
+  <span class="fragment fade-in">Ok(action_hash)</span>
+}</span>
+
+<span class="fragment fade-in">#[hdk_extern]
+fn get_all_comments_hashes(_: ()) -> ExternResult&lt;Vec&lt;ActionHash&gt;&gt; {
+  <span class="fragment fade-in">let anchor = Anchor(String::from("all_comments"));</span>
+
+  <span class="fragment fade-in">let anchor_hash = hash_entry(anchor)?;  </span> <span class="fragment fade-in">// Must be the same than the create function</span>
+
+  <span class="fragment fade-in">let links = get_links(anchor_hash, LinkTypes::AnchorToComment, None)?; // Get all the links created above</span>
+
+  <span class="fragment fade-in">let action_hashes: Vec&lt;ActionHash&gt; = links.into_iter()
+    .map(|link| ActionHash::from(link.target))
+    .collect(); // Extract the action hash from the links</span>
+  
+  <span class="fragment fade-in">Ok(action_hashes)</span>
+}  
+</span></code></pre>
+          </div>
+        </section>
+
+        <section>
+          <h3>Paths (I)</h3>
+
+          <li class="fragment fade-in-then-semi-out">
+            Anchors are great, but they can introduce problems
+            <ul>
+              <li class="fragment fade-in-then-semi-out">
+                If a large amount of links are attached to the same base, they
+                can become a burden of storage and bandwidth for the cells
+                holding those links
+                <ul>
+                  <li class="fragment fade-in-then-semi-out">
+                    This is know as a "DHT Hotspot"
+                  </li>
+                </ul>
+              </li>
+              <li class="fragment fade-in-then-semi-out">
+                They don't work well with complex queries that need filtering,
+                sorting, etc.
+                <ul>
+                  <li class="fragment fade-in-then-semi-out">
+                    For example, a query of the form
+                    "get_comment_by_date(start_date: Timestamp, end_date:
+                    Timestamp)"
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li class="fragment fade-in-then-semi-out">Solution: paths</li>
+        </section>
+
+        <section>
+          <h3>Paths (II)</h3>
+
+          <div class="column">
+            <div class="column">
+              <li class="fragment fade-in-then-semi-out">
+                Built-in to the HDK
+              </li>
+              <li class="fragment fade-in-then-semi-out">
+                Paths are anchor trees
+                <ul>
+                  <li class="fragment fade-in-then-semi-out">
+                    Top level anchor acts as the root node
+                  </li>
+                  <li class="fragment fade-in-then-semi-out">
+                    This root node is linked to its children, which themselves
+                    are anchors
+                  </li>
+                  <li class="fragment fade-in-then-semi-out">
+                    This tree can be dynamically constructed and have arbitrary
+                    depth
+                  </li>
+                </ul>
+              </li>
+              <li class="fragment fade-in-then-semi-out">
+                They are composed of a vector of components
+
+                <ul>
+                  <li class="fragment fade-in-then-semi-out">
+                    Each component is an arbitrary byte array
+                  </li>
+                  <li class="fragment fade-in-then-semi-out">
+                    Normally constructed from a string
+                  </li>
+                </ul>
+              </li>
+            </div>
+
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              xmlns:xlink="http://www.w3.org/1999/xlink"
+              version="1.1"
+              width="900px"
+              height="413px"
+              style="margin-top: -54px"
+              class="fragment fade-in"
+              viewBox="-0.5 -0.5 841 441"
+            >
+              <!-- TODO: animate the SVG if Marcus likes it -->
+              <defs></defs>
+              <g>
+                <path
+                  d="M 120 110 L 183.63 110"
+                  fill="none"
+                  stroke="#ffffff"
+                  stroke-miterlimit="10"
+                  pointer-events="stroke"
+                ></path>
+                <path
+                  d="M 188.88 110 L 181.88 113.5 L 183.63 110 L 181.88 106.5 Z"
+                  fill="#ffffff"
+                  stroke="#ffffff"
+                  stroke-miterlimit="10"
+                  pointer-events="all"
+                ></path>
+                <path
+                  d="M 120 110 L 155 110 L 155 290 L 183.63 290"
+                  fill="none"
+                  stroke="#ffffff"
+                  stroke-miterlimit="10"
+                  pointer-events="stroke"
+                ></path>
+                <path
+                  d="M 188.88 290 L 181.88 293.5 L 183.63 290 L 181.88 286.5 Z"
+                  fill="#ffffff"
+                  stroke="#ffffff"
+                  stroke-miterlimit="10"
+                  pointer-events="all"
+                ></path>
+                <rect
+                  x="0"
+                  y="90"
+                  width="120"
+                  height="40"
+                  fill="rgb(255, 255, 255)"
+                  stroke="#ffffff"
+                  pointer-events="all"
+                >
+                  <text
+                    x="60"
+                    y="114"
+                    fill="rgb(0, 0, 0)"
+                    font-family="Helvetica"
+                    font-size="12px"
+                    text-anchor="middle"
+                  >
+                    all_comments
+                  </text>
+                </rect>
+                <g transform="translate(-0.5 -0.5)">
+                  <switch>
+                    <foreignObject
+                      pointer-events="none"
+                      width="100%"
+                      height="100%"
+                      requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
+                      style="overflow: visible; text-align: left"
+                      ><div
+                        xmlns="http://www.w3.org/1999/xhtml"
+                        style="
+                          display: flex;
+                          align-items: unsafe center;
+                          justify-content: unsafe center;
+                          width: 118px;
+                          height: 1px;
+                          padding-top: 110px;
+                          margin-left: 1px;
+                        "
+                      >
+                        <div
+                          data-drawio-colors="color: rgb(0, 0, 0); "
+                          style="
+                            box-sizing: border-box;
+                            font-size: 0px;
+                            text-align: center;
+                          "
+                        >
+                          <div
+                            style="
+                              display: inline-block;
+                              font-size: 12px;
+                              font-family: Helvetica;
+                              color: rgb(0, 0, 0);
+                              line-height: 1.2;
+                              pointer-events: all;
+                              white-space: normal;
+                              overflow-wrap: normal;
+                            "
+                          >
+                            all_comments
+                          </div>
+                        </div>
+                      </div></foreignObject
+                    >
+                  </switch>
+                </g>
+                <path
+                  d="M 310 110 L 357.63 110"
+                  fill="none"
+                  stroke="#ffffff"
+                  stroke-miterlimit="10"
+                  pointer-events="stroke"
+                ></path>
+                <path
+                  d="M 362.88 110 L 355.88 113.5 L 357.63 110 L 355.88 106.5 Z"
+                  fill="#ffffff"
+                  stroke="#ffffff"
+                  stroke-miterlimit="10"
+                  pointer-events="all"
+                ></path>
+                <path
+                  d="M 310 110 L 337 110 L 337 170 L 357.63 170"
+                  fill="none"
+                  stroke="#ffffff"
+                  stroke-miterlimit="10"
+                  pointer-events="stroke"
+                ></path>
+                <path
+                  d="M 362.88 170 L 355.88 173.5 L 357.63 170 L 355.88 166.5 Z"
+                  fill="#ffffff"
+                  stroke="#ffffff"
+                  stroke-miterlimit="10"
+                  pointer-events="all"
+                ></path>
+                <path
+                  d="M 310 110 L 337 110 L 337 230 L 357.63 230"
+                  fill="none"
+                  stroke="#ffffff"
+                  stroke-miterlimit="10"
+                  pointer-events="stroke"
+                ></path>
+                <path
+                  d="M 362.88 230 L 355.88 233.5 L 357.63 230 L 355.88 226.5 Z"
+                  fill="#ffffff"
+                  stroke="#ffffff"
+                  stroke-miterlimit="10"
+                  pointer-events="all"
+                ></path>
+                <rect
+                  x="190"
+                  y="90"
+                  width="120"
+                  height="40"
+                  fill="rgb(255, 255, 255)"
+                  stroke="#ffffff"
+                  pointer-events="all"
+                ></rect>
+                <g transform="translate(-0.5 -0.5)">
+                  <switch>
+                    <foreignObject
+                      pointer-events="none"
+                      width="100%"
+                      height="100%"
+                      requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
+                      style="overflow: visible; text-align: left"
+                      ><div
+                        xmlns="http://www.w3.org/1999/xhtml"
+                        style="
+                          display: flex;
+                          align-items: unsafe center;
+                          justify-content: unsafe center;
+                          width: 118px;
+                          height: 1px;
+                          padding-top: 110px;
+                          margin-left: 191px;
+                        "
+                      >
+                        <div
+                          data-drawio-colors="color: rgb(0, 0, 0); "
+                          style="
+                            box-sizing: border-box;
+                            font-size: 0px;
+                            text-align: center;
+                          "
+                        >
+                          <div
+                            style="
+                              display: inline-block;
+                              font-size: 12px;
+                              font-family: Helvetica;
+                              color: rgb(0, 0, 0);
+                              line-height: 1.2;
+                              pointer-events: all;
+                              white-space: normal;
+                              overflow-wrap: normal;
+                            "
+                          >
+                            all_comments.2022
+                          </div>
+                        </div>
+                      </div></foreignObject
+                    >
+                    <text
+                      x="250"
+                      y="114"
+                      fill="rgb(0, 0, 0)"
+                      font-family="Helvetica"
+                      font-size="12px"
+                      text-anchor="middle"
+                    >
+                      all_comments.2022
+                    </text>
+                  </switch>
+                </g>
+                <path
+                  d="M 510 170 Q 605 170 605 145 Q 605 120 693.63 120"
+                  fill="none"
+                  stroke="#ffffff"
+                  stroke-miterlimit="10"
+                  pointer-events="stroke"
+                ></path>
+                <path
+                  d="M 698.88 120 L 691.88 123.5 L 693.63 120 L 691.88 116.5 Z"
+                  fill="#ffffff"
+                  stroke="#ffffff"
+                  stroke-miterlimit="10"
+                  pointer-events="all"
+                ></path>
+                <path
+                  d="M 510 170 Q 615 170 615 175 Q 615 180 713.63 180"
+                  fill="none"
+                  stroke="#ffffff"
+                  stroke-miterlimit="10"
+                  pointer-events="stroke"
+                ></path>
+                <path
+                  d="M 718.88 180 L 711.88 183.5 L 713.63 180 L 711.88 176.5 Z"
+                  fill="#ffffff"
+                  stroke="#ffffff"
+                  stroke-miterlimit="10"
+                  pointer-events="all"
+                ></path>
+                <rect
+                  x="364"
+                  y="150"
+                  width="146"
+                  height="40"
+                  fill="rgb(255, 255, 255)"
+                  stroke="#ffffff"
+                  pointer-events="all"
+                ></rect>
+                <g transform="translate(-0.5 -0.5)">
+                  <switch>
+                    <foreignObject
+                      pointer-events="none"
+                      width="100%"
+                      height="100%"
+                      requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
+                      style="overflow: visible; text-align: left"
+                      ><div
+                        xmlns="http://www.w3.org/1999/xhtml"
+                        style="
+                          display: flex;
+                          align-items: unsafe center;
+                          justify-content: unsafe center;
+                          width: 144px;
+                          height: 1px;
+                          padding-top: 170px;
+                          margin-left: 365px;
+                        "
+                      >
+                        <div
+                          data-drawio-colors="color: rgb(0, 0, 0); "
+                          style="
+                            box-sizing: border-box;
+                            font-size: 0px;
+                            text-align: center;
+                          "
+                        >
+                          <div
+                            style="
+                              display: inline-block;
+                              font-size: 12px;
+                              font-family: Helvetica;
+                              color: rgb(0, 0, 0);
+                              line-height: 1.2;
+                              pointer-events: all;
+                              white-space: normal;
+                              overflow-wrap: normal;
+                            "
+                          >
+                            all_comments.2022.6
+                          </div>
+                        </div>
+                      </div></foreignObject
+                    >
+                    <text
+                      x="437"
+                      y="174"
+                      fill="rgb(0, 0, 0)"
+                      font-family="Helvetica"
+                      font-size="12px"
+                      text-anchor="middle"
+                    >
+                      all_comments.2022.6
+                    </text>
+                  </switch>
+                </g>
+                <path
+                  d="M 310 290 L 357.63 290"
+                  fill="none"
+                  stroke="#ffffff"
+                  stroke-miterlimit="10"
+                  pointer-events="stroke"
+                ></path>
+                <path
+                  d="M 362.88 290 L 355.88 293.5 L 357.63 290 L 355.88 286.5 Z"
+                  fill="#ffffff"
+                  stroke="#ffffff"
+                  stroke-miterlimit="10"
+                  pointer-events="all"
+                ></path>
+                <path
+                  d="M 310 290 L 337 290 L 337 350 L 357.63 350"
+                  fill="none"
+                  stroke="#ffffff"
+                  stroke-miterlimit="10"
+                  pointer-events="stroke"
+                ></path>
+                <path
+                  d="M 362.88 350 L 355.88 353.5 L 357.63 350 L 355.88 346.5 Z"
+                  fill="#ffffff"
+                  stroke="#ffffff"
+                  stroke-miterlimit="10"
+                  pointer-events="all"
+                ></path>
+                <rect
+                  x="190"
+                  y="270"
+                  width="120"
+                  height="40"
+                  fill="rgb(255, 255, 255)"
+                  stroke="#ffffff"
+                  pointer-events="all"
+                ></rect>
+                <g transform="translate(-0.5 -0.5)">
+                  <switch>
+                    <foreignObject
+                      pointer-events="none"
+                      width="100%"
+                      height="100%"
+                      requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
+                      style="overflow: visible; text-align: left"
+                      ><div
+                        xmlns="http://www.w3.org/1999/xhtml"
+                        style="
+                          display: flex;
+                          align-items: unsafe center;
+                          justify-content: unsafe center;
+                          width: 118px;
+                          height: 1px;
+                          padding-top: 290px;
+                          margin-left: 191px;
+                        "
+                      >
+                        <div
+                          data-drawio-colors="color: rgb(0, 0, 0); "
+                          style="
+                            box-sizing: border-box;
+                            font-size: 0px;
+                            text-align: center;
+                          "
+                        >
+                          <div
+                            style="
+                              display: inline-block;
+                              font-size: 12px;
+                              font-family: Helvetica;
+                              color: rgb(0, 0, 0);
+                              line-height: 1.2;
+                              pointer-events: all;
+                              white-space: normal;
+                              overflow-wrap: normal;
+                            "
+                          >
+                            all_comments.2021
+                          </div>
+                        </div>
+                      </div></foreignObject
+                    >
+                    <text
+                      x="250"
+                      y="294"
+                      fill="rgb(0, 0, 0)"
+                      font-family="Helvetica"
+                      font-size="12px"
+                      text-anchor="middle"
+                    >
+                      all_comments.2021
+                    </text>
+                  </switch>
+                </g>
+                <path
+                  d="M 510 230 Q 615 230 615 235 Q 615 240 713.63 240"
+                  fill="none"
+                  stroke="#ffffff"
+                  stroke-miterlimit="10"
+                  pointer-events="stroke"
+                ></path>
+                <path
+                  d="M 718.88 240 L 711.88 243.5 L 713.63 240 L 711.88 236.5 Z"
+                  fill="#ffffff"
+                  stroke="#ffffff"
+                  stroke-miterlimit="10"
+                  pointer-events="all"
+                ></path>
+                <rect
+                  x="364"
+                  y="210"
+                  width="146"
+                  height="40"
+                  fill="rgb(255, 255, 255)"
+                  stroke="#ffffff"
+                  pointer-events="all"
+                ></rect>
+                <g transform="translate(-0.5 -0.5)">
+                  <switch>
+                    <foreignObject
+                      pointer-events="none"
+                      width="100%"
+                      height="100%"
+                      requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
+                      style="overflow: visible; text-align: left"
+                      ><div
+                        xmlns="http://www.w3.org/1999/xhtml"
+                        style="
+                          display: flex;
+                          align-items: unsafe center;
+                          justify-content: unsafe center;
+                          width: 144px;
+                          height: 1px;
+                          padding-top: 230px;
+                          margin-left: 365px;
+                        "
+                      >
+                        <div
+                          data-drawio-colors="color: rgb(0, 0, 0); "
+                          style="
+                            box-sizing: border-box;
+                            font-size: 0px;
+                            text-align: center;
+                          "
+                        >
+                          <div
+                            style="
+                              display: inline-block;
+                              font-size: 12px;
+                              font-family: Helvetica;
+                              color: rgb(0, 0, 0);
+                              line-height: 1.2;
+                              pointer-events: all;
+                              white-space: normal;
+                              overflow-wrap: normal;
+                            "
+                          >
+                            all_comments.2022.3
+                          </div>
+                        </div>
+                      </div></foreignObject
+                    >
+                    <text
+                      x="437"
+                      y="234"
+                      fill="rgb(0, 0, 0)"
+                      font-family="Helvetica"
+                      font-size="12px"
+                      text-anchor="middle"
+                    >
+                      all_comments.2022.3
+                    </text>
+                  </switch>
+                </g>
+                <path
+                  d="M 510 110 Q 580 110 580 46.37"
+                  fill="none"
+                  stroke="#ffffff"
+                  stroke-miterlimit="10"
+                  pointer-events="stroke"
+                ></path>
+                <path
+                  d="M 580 41.12 L 583.5 48.12 L 580 46.37 L 576.5 48.12 Z"
+                  fill="#ffffff"
+                  stroke="#ffffff"
+                  stroke-miterlimit="10"
+                  pointer-events="all"
+                ></path>
+                <path
+                  d="M 510 110 Q 585 110 585 90 Q 585 70 653.63 70"
+                  fill="none"
+                  stroke="#ffffff"
+                  stroke-miterlimit="10"
+                  pointer-events="stroke"
+                ></path>
+                <path
+                  d="M 658.88 70 L 651.88 73.5 L 653.63 70 L 651.88 66.5 Z"
+                  fill="#ffffff"
+                  stroke="#ffffff"
+                  stroke-miterlimit="10"
+                  pointer-events="all"
+                ></path>
+                <rect
+                  x="364"
+                  y="90"
+                  width="146"
+                  height="40"
+                  fill="rgb(255, 255, 255)"
+                  stroke="#ffffff"
+                  pointer-events="all"
+                ></rect>
+                <g transform="translate(-0.5 -0.5)">
+                  <switch>
+                    <foreignObject
+                      pointer-events="none"
+                      width="100%"
+                      height="100%"
+                      requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
+                      style="overflow: visible; text-align: left"
+                      ><div
+                        xmlns="http://www.w3.org/1999/xhtml"
+                        style="
+                          display: flex;
+                          align-items: unsafe center;
+                          justify-content: unsafe center;
+                          width: 144px;
+                          height: 1px;
+                          padding-top: 110px;
+                          margin-left: 365px;
+                        "
+                      >
+                        <div
+                          data-drawio-colors="color: rgb(0, 0, 0); "
+                          style="
+                            box-sizing: border-box;
+                            font-size: 0px;
+                            text-align: center;
+                          "
+                        >
+                          <div
+                            style="
+                              display: inline-block;
+                              font-size: 12px;
+                              font-family: Helvetica;
+                              color: rgb(0, 0, 0);
+                              line-height: 1.2;
+                              pointer-events: all;
+                              white-space: normal;
+                              overflow-wrap: normal;
+                            "
+                          >
+                            all_comments.2022.7
+                          </div>
+                        </div>
+                      </div></foreignObject
+                    >
+                    <text
+                      x="437"
+                      y="114"
+                      fill="rgb(0, 0, 0)"
+                      font-family="Helvetica"
+                      font-size="12px"
+                      text-anchor="middle"
+                    >
+                      all_comments.2022.7
+                    </text>
+                  </switch>
+                </g>
+                <path
+                  d="M 510 350 Q 580 350 580 393.63"
+                  fill="none"
+                  stroke="#ffffff"
+                  stroke-miterlimit="10"
+                  pointer-events="stroke"
+                ></path>
+                <path
+                  d="M 580 398.88 L 576.5 391.88 L 580 393.63 L 583.5 391.88 Z"
+                  fill="#ffffff"
+                  stroke="#ffffff"
+                  stroke-miterlimit="10"
+                  pointer-events="all"
+                ></path>
+                <path
+                  d="M 510 350 Q 590 350 590 360 Q 590 370 663.63 370"
+                  fill="none"
+                  stroke="#ffffff"
+                  stroke-miterlimit="10"
+                  pointer-events="stroke"
+                ></path>
+                <path
+                  d="M 668.88 370 L 661.88 373.5 L 663.63 370 L 661.88 366.5 Z"
+                  fill="#ffffff"
+                  stroke="#ffffff"
+                  stroke-miterlimit="10"
+                  pointer-events="all"
+                ></path>
+                <rect
+                  x="364"
+                  y="330"
+                  width="146"
+                  height="40"
+                  fill="rgb(255, 255, 255)"
+                  stroke="#ffffff"
+                  pointer-events="all"
+                ></rect>
+                <g transform="translate(-0.5 -0.5)">
+                  <switch>
+                    <foreignObject
+                      pointer-events="none"
+                      width="100%"
+                      height="100%"
+                      requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
+                      style="overflow: visible; text-align: left"
+                      ><div
+                        xmlns="http://www.w3.org/1999/xhtml"
+                        style="
+                          display: flex;
+                          align-items: unsafe center;
+                          justify-content: unsafe center;
+                          width: 144px;
+                          height: 1px;
+                          padding-top: 350px;
+                          margin-left: 365px;
+                        "
+                      >
+                        <div
+                          data-drawio-colors="color: rgb(0, 0, 0); "
+                          style="
+                            box-sizing: border-box;
+                            font-size: 0px;
+                            text-align: center;
+                          "
+                        >
+                          <div
+                            style="
+                              display: inline-block;
+                              font-size: 12px;
+                              font-family: Helvetica;
+                              color: rgb(0, 0, 0);
+                              line-height: 1.2;
+                              pointer-events: all;
+                              white-space: normal;
+                              overflow-wrap: normal;
+                            "
+                          >
+                            all_comments.2021.6
+                          </div>
+                        </div>
+                      </div></foreignObject
+                    >
+                    <text
+                      x="437"
+                      y="354"
+                      fill="rgb(0, 0, 0)"
+                      font-family="Helvetica"
+                      font-size="12px"
+                      text-anchor="middle"
+                    >
+                      all_comments.2021.6
+                    </text>
+                  </switch>
+                </g>
+                <path
+                  d="M 510 290 Q 605 290 605 300 Q 605 310 693.63 310"
+                  fill="none"
+                  stroke="#ffffff"
+                  stroke-miterlimit="10"
+                  pointer-events="stroke"
+                ></path>
+                <path
+                  d="M 698.88 310 L 691.88 313.5 L 693.63 310 L 691.88 306.5 Z"
+                  fill="#ffffff"
+                  stroke="#ffffff"
+                  stroke-miterlimit="10"
+                  pointer-events="all"
+                ></path>
+                <rect
+                  x="364"
+                  y="270"
+                  width="146"
+                  height="40"
+                  fill="rgb(255, 255, 255)"
+                  stroke="#ffffff"
+                  pointer-events="all"
+                ></rect>
+                <g transform="translate(-0.5 -0.5)">
+                  <switch>
+                    <foreignObject
+                      pointer-events="none"
+                      width="100%"
+                      height="100%"
+                      requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
+                      style="overflow: visible; text-align: left"
+                      ><div
+                        xmlns="http://www.w3.org/1999/xhtml"
+                        style="
+                          display: flex;
+                          align-items: unsafe center;
+                          justify-content: unsafe center;
+                          width: 144px;
+                          height: 1px;
+                          padding-top: 290px;
+                          margin-left: 365px;
+                        "
+                      >
+                        <div
+                          data-drawio-colors="color: rgb(0, 0, 0); "
+                          style="
+                            box-sizing: border-box;
+                            font-size: 0px;
+                            text-align: center;
+                          "
+                        >
+                          <div
+                            style="
+                              display: inline-block;
+                              font-size: 12px;
+                              font-family: Helvetica;
+                              color: rgb(0, 0, 0);
+                              line-height: 1.2;
+                              pointer-events: all;
+                              white-space: normal;
+                              overflow-wrap: normal;
+                            "
+                          >
+                            all_comments.2021.3
+                          </div>
+                        </div>
+                      </div></foreignObject
+                    >
+                    <text
+                      x="437"
+                      y="294"
+                      fill="rgb(0, 0, 0)"
+                      font-family="Helvetica"
+                      font-size="12px"
+                      text-anchor="middle"
+                    >
+                      all_comments.2021.3
+                    </text>
+                  </switch>
+                </g>
+                <rect
+                  x="580"
+                  y="400"
+                  width="120"
+                  height="40"
+                  fill="rgb(255, 255, 255)"
+                  stroke="#ffffff"
+                  pointer-events="all"
+                ></rect>
+                <g transform="translate(-0.5 -0.5)">
+                  <switch>
+                    <foreignObject
+                      pointer-events="none"
+                      width="100%"
+                      height="100%"
+                      requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
+                      style="overflow: visible; text-align: left"
+                      ><div
+                        xmlns="http://www.w3.org/1999/xhtml"
+                        style="
+                          display: flex;
+                          align-items: unsafe center;
+                          justify-content: unsafe center;
+                          width: 118px;
+                          height: 1px;
+                          padding-top: 420px;
+                          margin-left: 581px;
+                        "
+                      >
+                        <div
+                          data-drawio-colors="color: rgb(0, 0, 0); "
+                          style="
+                            box-sizing: border-box;
+                            font-size: 0px;
+                            text-align: center;
+                          "
+                        >
+                          <div
+                            style="
+                              display: inline-block;
+                              font-size: 12px;
+                              font-family: Helvetica;
+                              color: rgb(0, 0, 0);
+                              line-height: 1.2;
+                              pointer-events: all;
+                              white-space: normal;
+                              overflow-wrap: normal;
+                            "
+                          >
+                            comment1
+                          </div>
+                        </div>
+                      </div></foreignObject
+                    >
+                    <text
+                      x="640"
+                      y="424"
+                      fill="rgb(0, 0, 0)"
+                      font-family="Helvetica"
+                      font-size="12px"
+                      text-anchor="middle"
+                    >
+                      comment1
+                    </text>
+                  </switch>
+                </g>
+                <rect
+                  x="670"
+                  y="350"
+                  width="120"
+                  height="40"
+                  fill="rgb(255, 255, 255)"
+                  stroke="#ffffff"
+                  pointer-events="all"
+                ></rect>
+                <g transform="translate(-0.5 -0.5)">
+                  <switch>
+                    <foreignObject
+                      pointer-events="none"
+                      width="100%"
+                      height="100%"
+                      requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
+                      style="overflow: visible; text-align: left"
+                      ><div
+                        xmlns="http://www.w3.org/1999/xhtml"
+                        style="
+                          display: flex;
+                          align-items: unsafe center;
+                          justify-content: unsafe center;
+                          width: 118px;
+                          height: 1px;
+                          padding-top: 370px;
+                          margin-left: 671px;
+                        "
+                      >
+                        <div
+                          data-drawio-colors="color: rgb(0, 0, 0); "
+                          style="
+                            box-sizing: border-box;
+                            font-size: 0px;
+                            text-align: center;
+                          "
+                        >
+                          <div
+                            style="
+                              display: inline-block;
+                              font-size: 12px;
+                              font-family: Helvetica;
+                              color: rgb(0, 0, 0);
+                              line-height: 1.2;
+                              pointer-events: all;
+                              white-space: normal;
+                              overflow-wrap: normal;
+                            "
+                          >
+                            comment2
+                          </div>
+                        </div>
+                      </div></foreignObject
+                    >
+                    <text
+                      x="730"
+                      y="374"
+                      fill="rgb(0, 0, 0)"
+                      font-family="Helvetica"
+                      font-size="12px"
+                      text-anchor="middle"
+                    >
+                      comment2
+                    </text>
+                  </switch>
+                </g>
+                <rect
+                  x="700"
+                  y="290"
+                  width="120"
+                  height="40"
+                  fill="rgb(255, 255, 255)"
+                  stroke="#ffffff"
+                  pointer-events="all"
+                ></rect>
+                <g transform="translate(-0.5 -0.5)">
+                  <switch>
+                    <foreignObject
+                      pointer-events="none"
+                      width="100%"
+                      height="100%"
+                      requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
+                      style="overflow: visible; text-align: left"
+                      ><div
+                        xmlns="http://www.w3.org/1999/xhtml"
+                        style="
+                          display: flex;
+                          align-items: unsafe center;
+                          justify-content: unsafe center;
+                          width: 118px;
+                          height: 1px;
+                          padding-top: 310px;
+                          margin-left: 701px;
+                        "
+                      >
+                        <div
+                          data-drawio-colors="color: rgb(0, 0, 0); "
+                          style="
+                            box-sizing: border-box;
+                            font-size: 0px;
+                            text-align: center;
+                          "
+                        >
+                          <div
+                            style="
+                              display: inline-block;
+                              font-size: 12px;
+                              font-family: Helvetica;
+                              color: rgb(0, 0, 0);
+                              line-height: 1.2;
+                              pointer-events: all;
+                              white-space: normal;
+                              overflow-wrap: normal;
+                            "
+                          >
+                            comment4
+                          </div>
+                        </div>
+                      </div></foreignObject
+                    >
+                    <text
+                      x="760"
+                      y="314"
+                      fill="rgb(0, 0, 0)"
+                      font-family="Helvetica"
+                      font-size="12px"
+                      text-anchor="middle"
+                    >
+                      comment4
+                    </text>
+                  </switch>
+                </g>
+                <rect
+                  x="720"
+                  y="220"
+                  width="120"
+                  height="40"
+                  fill="rgb(255, 255, 255)"
+                  stroke="#ffffff"
+                  pointer-events="all"
+                ></rect>
+                <g transform="translate(-0.5 -0.5)">
+                  <switch>
+                    <foreignObject
+                      pointer-events="none"
+                      width="100%"
+                      height="100%"
+                      requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
+                      style="overflow: visible; text-align: left"
+                      ><div
+                        xmlns="http://www.w3.org/1999/xhtml"
+                        style="
+                          display: flex;
+                          align-items: unsafe center;
+                          justify-content: unsafe center;
+                          width: 118px;
+                          height: 1px;
+                          padding-top: 240px;
+                          margin-left: 721px;
+                        "
+                      >
+                        <div
+                          data-drawio-colors="color: rgb(0, 0, 0); "
+                          style="
+                            box-sizing: border-box;
+                            font-size: 0px;
+                            text-align: center;
+                          "
+                        >
+                          <div
+                            style="
+                              display: inline-block;
+                              font-size: 12px;
+                              font-family: Helvetica;
+                              color: rgb(0, 0, 0);
+                              line-height: 1.2;
+                              pointer-events: all;
+                              white-space: normal;
+                              overflow-wrap: normal;
+                            "
+                          >
+                            comment5
+                          </div>
+                        </div>
+                      </div></foreignObject
+                    >
+                    <text
+                      x="780"
+                      y="244"
+                      fill="rgb(0, 0, 0)"
+                      font-family="Helvetica"
+                      font-size="12px"
+                      text-anchor="middle"
+                    >
+                      comment5
+                    </text>
+                  </switch>
+                </g>
+                <rect
+                  x="720"
+                  y="160"
+                  width="120"
+                  height="40"
+                  fill="rgb(255, 255, 255)"
+                  stroke="#ffffff"
+                  pointer-events="all"
+                ></rect>
+                <g transform="translate(-0.5 -0.5)">
+                  <switch>
+                    <foreignObject
+                      pointer-events="none"
+                      width="100%"
+                      height="100%"
+                      requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
+                      style="overflow: visible; text-align: left"
+                      ><div
+                        xmlns="http://www.w3.org/1999/xhtml"
+                        style="
+                          display: flex;
+                          align-items: unsafe center;
+                          justify-content: unsafe center;
+                          width: 118px;
+                          height: 1px;
+                          padding-top: 180px;
+                          margin-left: 721px;
+                        "
+                      >
+                        <div
+                          data-drawio-colors="color: rgb(0, 0, 0); "
+                          style="
+                            box-sizing: border-box;
+                            font-size: 0px;
+                            text-align: center;
+                          "
+                        >
+                          <div
+                            style="
+                              display: inline-block;
+                              font-size: 12px;
+                              font-family: Helvetica;
+                              color: rgb(0, 0, 0);
+                              line-height: 1.2;
+                              pointer-events: all;
+                              white-space: normal;
+                              overflow-wrap: normal;
+                            "
+                          >
+                            comment6
+                          </div>
+                        </div>
+                      </div></foreignObject
+                    >
+                    <text
+                      x="780"
+                      y="184"
+                      fill="rgb(0, 0, 0)"
+                      font-family="Helvetica"
+                      font-size="12px"
+                      text-anchor="middle"
+                    >
+                      comment6
+                    </text>
+                  </switch>
+                </g>
+                <rect
+                  x="700"
+                  y="100"
+                  width="120"
+                  height="40"
+                  fill="rgb(255, 255, 255)"
+                  stroke="#ffffff"
+                  pointer-events="all"
+                ></rect>
+                <g transform="translate(-0.5 -0.5)">
+                  <switch>
+                    <foreignObject
+                      pointer-events="none"
+                      width="100%"
+                      height="100%"
+                      requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
+                      style="overflow: visible; text-align: left"
+                      ><div
+                        xmlns="http://www.w3.org/1999/xhtml"
+                        style="
+                          display: flex;
+                          align-items: unsafe center;
+                          justify-content: unsafe center;
+                          width: 118px;
+                          height: 1px;
+                          padding-top: 120px;
+                          margin-left: 701px;
+                        "
+                      >
+                        <div
+                          data-drawio-colors="color: rgb(0, 0, 0); "
+                          style="
+                            box-sizing: border-box;
+                            font-size: 0px;
+                            text-align: center;
+                          "
+                        >
+                          <div
+                            style="
+                              display: inline-block;
+                              font-size: 12px;
+                              font-family: Helvetica;
+                              color: rgb(0, 0, 0);
+                              line-height: 1.2;
+                              pointer-events: all;
+                              white-space: normal;
+                              overflow-wrap: normal;
+                            "
+                          >
+                            comment7
+                          </div>
+                        </div>
+                      </div></foreignObject
+                    >
+                    <text
+                      x="760"
+                      y="124"
+                      fill="rgb(0, 0, 0)"
+                      font-family="Helvetica"
+                      font-size="12px"
+                      text-anchor="middle"
+                    >
+                      comment7
+                    </text>
+                  </switch>
+                </g>
+                <rect
+                  x="660"
+                  y="50"
+                  width="120"
+                  height="40"
+                  fill="rgb(255, 255, 255)"
+                  stroke="#ffffff"
+                  pointer-events="all"
+                ></rect>
+                <g transform="translate(-0.5 -0.5)">
+                  <switch>
+                    <foreignObject
+                      pointer-events="none"
+                      width="100%"
+                      height="100%"
+                      requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
+                      style="overflow: visible; text-align: left"
+                      ><div
+                        xmlns="http://www.w3.org/1999/xhtml"
+                        style="
+                          display: flex;
+                          align-items: unsafe center;
+                          justify-content: unsafe center;
+                          width: 118px;
+                          height: 1px;
+                          padding-top: 70px;
+                          margin-left: 661px;
+                        "
+                      >
+                        <div
+                          data-drawio-colors="color: rgb(0, 0, 0); "
+                          style="
+                            box-sizing: border-box;
+                            font-size: 0px;
+                            text-align: center;
+                          "
+                        >
+                          <div
+                            style="
+                              display: inline-block;
+                              font-size: 12px;
+                              font-family: Helvetica;
+                              color: rgb(0, 0, 0);
+                              line-height: 1.2;
+                              pointer-events: all;
+                              white-space: normal;
+                              overflow-wrap: normal;
+                            "
+                          >
+                            comment8
+                          </div>
+                        </div>
+                      </div></foreignObject
+                    >
+                    <text
+                      x="720"
+                      y="74"
+                      fill="rgb(0, 0, 0)"
+                      font-family="Helvetica"
+                      font-size="12px"
+                      text-anchor="middle"
+                    >
+                      comment8
+                    </text>
+                  </switch>
+                </g>
+                <rect
+                  x="580"
+                  y="0"
+                  width="120"
+                  height="40"
+                  fill="rgb(255, 255, 255)"
+                  stroke="#ffffff"
+                  pointer-events="all"
+                ></rect>
+                <g transform="translate(-0.5 -0.5)">
+                  <switch>
+                    <foreignObject
+                      pointer-events="none"
+                      width="100%"
+                      height="100%"
+                      requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
+                      style="overflow: visible; text-align: left"
+                      ><div
+                        xmlns="http://www.w3.org/1999/xhtml"
+                        style="
+                          display: flex;
+                          align-items: unsafe center;
+                          justify-content: unsafe center;
+                          width: 118px;
+                          height: 1px;
+                          padding-top: 20px;
+                          margin-left: 581px;
+                        "
+                      >
+                        <div
+                          data-drawio-colors="color: rgb(0, 0, 0); "
+                          style="
+                            box-sizing: border-box;
+                            font-size: 0px;
+                            text-align: center;
+                          "
+                        >
+                          <div
+                            style="
+                              display: inline-block;
+                              font-size: 12px;
+                              font-family: Helvetica;
+                              color: rgb(0, 0, 0);
+                              line-height: 1.2;
+                              pointer-events: all;
+                              white-space: normal;
+                              overflow-wrap: normal;
+                            "
+                          >
+                            comment9
+                          </div>
+                        </div>
+                      </div></foreignObject
+                    >
+                    <text
+                      x="640"
+                      y="24"
+                      fill="rgb(0, 0, 0)"
+                      font-family="Helvetica"
+                      font-size="12px"
+                      text-anchor="middle"
+                    >
+                      comment9
+                    </text>
+                  </switch>
+                </g>
+              </g>
+              <switch>
+                <g
+                  requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
+                ></g>
+                <a
+                  transform="translate(0,-5)"
+                  xlink:href="https://www.diagrams.net/doc/faq/svg-export-text-problems"
+                  target="_blank"
+                >
+                  <text text-anchor="middle" font-size="10px" x="50%" y="100%">
+                    Text is not SVG - cannot display
+                  </text>
+                </a>
+              </switch>
+            </svg>
+          </div>
+        </section>
+
+        <section>
+          <h3>Paths (III)</h3>
+
+          <pre
+            class="fragment fade-in"
+          ><code class="rust" data-noescape><span class="fragment fade-in-then-semi-out">use hdk::prelude::*;
+<span class="fragment fade-in">use integrity_zome::{EntryTypes, Comment, LinkTypes}; // Import the types defined in our integrity zome</span>
+<span class="fragment fade-in">use chrono::*; // Import the chrono crate for time related utilites</span>
+
+<span class="fragment fade-in-then-semi-out">#[hdk_extern]
+fn create_comment(comment: Comment) -> ExternResult&lt;ActionHash&gt; {
+  <span class="fragment fade-in">let comment_action_hash = create_entry(EntryTypes::Comment(comment))?; // Create comment as always</span>
+  
+  <span class="fragment fade-in">let (secs, nsecs) = sys_time()?.as_seconds_and_nanos(); // Get the current timestamp in microseconds</span>
+  <span class="fragment fade-in">let dt: DateTime&lt;Utc&gt; = DateTime::from_utc(NaiveDateTime::from_timestamp(secs, nsecs), Utc);</span>
+
+  <span class="fragment fade-in">let path = Path::from(format!("all_comments.{}.{}"<span class="fragment fade-in-then-out popover">The '.' is the separator between components</span>, dt.year(), dt.month()));</span><span class="fragment fade-in"> // Builds the path "all_comments.2022.7"</span>
+  <span class="fragment fade-in">let typed_path = path.typed(LinkTypes::PathTimeIndex)?;<span class="fragment fade-in-then-out popover">"TypedPath" is a path with all the links of a certain type</span></span><span class="fragment fade-in"> // Add the link type to the path</span>
+  <span class="fragment fade-in">typed_path.ensure()?;<span class="fragment fade-in-then-out popover">Creates the path tree structure, and all the necessary links</span></span><span class="fragment fade-in"> // Build the path's anchor tree</span>
+  
+  <span class="fragment fade-in">create_link(
+    <span class="fragment fade-in">typed_path.path_entry_hash()?, <span class="fragment fade-in-then-out popover">Entry hash of the path</span></span><span class="fragment fade-in">comment_action_hash,</span> <span class="fragment fade-in">LinkTypes::PathToComment,</span> <span class="fragment fade-in">()</span>
+  )?;</span>
+
+  <span class="fragment fade-in">Ok(action_hash)</span>
+}</span>
+
+<span class="fragment fade-in">#[hdk_extern]
+fn get_comments_by_year(year: u32) -> ExternResult&lt;Vec&lt;ActionHash&gt;&gt; {
+  <span class="fragment fade-in">let year_path = Path::from(format!("all_comments.{}", year))<span class="fragment fade-in-then-out popover">Build the anchor in the intermediate node</span>.typed(LinkTypes::PathTimeIndex);</span>
+  
+  <span class="fragment fade-in">let month_paths: Vec&lt;Path&gt; = year_path.children_paths()?;<span class="fragment fade-in-then-out popover">Retrieves all the children node month paths</span></span>
+
+  <span class="fragment fade-in">let mut all_links: Vec&lt;Link&gt; = vec![];</span>
+  <span class="fragment fade-in">for path in month_paths {
+    <span class="fragment fade-in">let mut links = get_links(anchor_hash, LinkTypes::PathToComment, None)?; // Get all the links created above</span>
+    <span class="fragment fade-in">all_links.append(&mut links); // Collect the links</span>
+  }</span>
+
+  <span class="fragment fade-in">let all_links: Vec&lt;ActionHash&gt; = links.into_iter()
+    .map(|link| ActionHash::from(link.target))
+    .collect(); // Extract the action hash from the links</span>
+  
+  <span class="fragment fade-in">Ok(action_hashes)</span>
+}  
+</span>
+</span></code></pre>
+        </section>
+      </div>
+    </div>
+
+    <script type="module">
+      import Reveal from "reveal.js";
+      import Markdown from "reveal.js/plugin/markdown/markdown.esm.js";
+      import RevealHighlight from "reveal.js/plugin/highlight/highlight.esm.js";
+      import RevealNotes from "reveal.js/plugin/notes/notes.esm.js";
+      import RevealNestedFragments from "reveal.js-nested-fragments";
+
+      let deck = new Reveal({
+        transition: "none",
+        plugins: [
+          Markdown,
+          RevealHighlight,
+          RevealNotes,
+          RevealNestedFragments,
+        ],
+      });
+      deck.initialize();
+    </script>
+  </body>
+</html>
