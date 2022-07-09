@@ -71,6 +71,7 @@
 
       .popover .hljs-meta,
       .popover .hljs-class,
+      .popover .hljs-symbol,
       .popover .hljs-keyword,
       .popover .hljs-string,
       .popover .hljs-title {
@@ -129,19 +130,25 @@
     <div class="reveal">
       <div class="slides">
         <section>
-          <h1>Capability Tokens & P2P</h1>
+          <h1>Capability Tokens & P2P Functionality</h1>
         </section>
 
         <section>
           <h3>Zome Calls</h3>
 
           <li class="fragment fade-in-then-semi-out">
-            Zome calls have a unified security model, that protects all zome
-            calls independently of where they originated
+            Zome calls have a unified security model
+            <ul>
+              <li class="fragment fade-in-then-semi-out">
+                Protects all zome calls independently of where they originated
+                (externally or within the conductor)
+              </li>
+            </ul>
           </li>
+
           <li class="fragment fade-in-then-semi-out">
             When the conductor receives a zome call request, it checks whether
-            the zome call complies with the security checks:
+            it complies with the security checks:
 
             <ul>
               <li class="fragment fade-in-then-semi-out">
@@ -150,10 +157,11 @@
               </li>
               <li class="fragment fade-in-then-semi-out">
                 If not, the conductor looks up the source chain for that cell
-                for capability tokens for the requested function
+                for <strong>capability tokens</strong> for the requested
+                function
                 <ul>
                   <li class="fragment fade-in-then-semi-out">
-                    If some capability token allows the request, it is executed
+                    If some capability grant allows the request, it is executed
                   </li>
                   <li class="fragment fade-in-then-semi-out">
                     Otherwise, the request is rejected
@@ -168,28 +176,72 @@
           <h3>Capability Tokens (I)</h3>
 
           <li class="fragment fade-in-then-semi-out">
-            Private entries called "Capability Grants" that grant authorization to execute zome calls by sources
-            external to the cell
+            Private entries that manage authorization to execute zome calls by
+            sources external to the cell
           </li>
           <li class="fragment fade-in-then-semi-out">
-            Can be created as any other entry, at any point in time
+            Two types of private entries:
+            <ul>
+              <li class="fragment fade-in-then-semi-out">
+                Capability Grants
+                <ul>
+                  <li class="fragment fade-in-then-semi-out">
+                    Stored by the grantor of the zome call request
+                  </li>
+                  <li class="fragment fade-in-then-semi-out">
+                    Allow an external source to execute a zome call request
+                  </li>
+                  <li class="fragment fade-in-then-semi-out">
+                    When they are deleted, that grant is not longer taken into
+                    account in the security checks
+                  </li>
+                  <li class="fragment fade-in-then-semi-out">
+                    This means that the cell is always in control of the grants
+                    that it makes to external sources
+                  </li>
+                </ul>
+              </li>
+              <li class="fragment fade-in-then-semi-out">
+                Capability Claim
+                <ul>
+                  <li class="fragment fade-in-then-semi-out">
+                    Stored by the grantee of the capability
+                  </li>
+                  <li class="fragment fade-in-then-semi-out">
+                    Don't allow access to external zome call requests
+                  </li>
+                  <li class="fragment fade-in-then-semi-out">
+                    Mostly a convenience entry type just to store information
+                    about the Capability Grant
+                  </li>
+                </ul>
+              </li>
+            </ul>
           </li>
           <li class="fragment fade-in-then-semi-out">
-            When they are deleted, that grant is not longer taken into
-            account
-          </li>
-          <li class="fragment fade-in-then-semi-out">
-            This means that the cell is always in control of the grants that
-            it makes to external sources
+            Both can be created as any other entry, at any point in time
           </li>
         </section>
 
         <section>
           <h3>Capability Tokens (II)</h3>
 
-          <h4>Types</h4>
+          <h4>Types of Capability Grant</h4>
 
-          
+          <li class="fragment fade-in-then-semi-out">
+            Unrestricted: disable security checks
+            <ul>
+              <li class="fragment fade-in-then-semi-out">
+                Any call to the function coming from any source will be executed
+              </li>
+              <li class="fragment fade-in-then-semi-out">
+                This can be a huge security risk, so we generally don't grant
+                unrestricted capability grants unless there is a really good
+                reason
+              </li>
+            </ul>
+          </li>
+
           <li class="fragment fade-in-then-semi-out">
             Transferable: any source that knows a specific secret
             <ul>
@@ -197,23 +249,12 @@
                 The zome call must carry a secret
               </li>
               <li class="fragment fade-in-then-semi-out">
-                Only the calls that carry the secret specified in the capability token will be executed
+                Only the calls that carry the secret specified in the capability
+                token will be executed
               </li>
               <li class="fragment fade-in-then-semi-out">
-                The secret can be stored in the source chain of the caller with a "Capability Claim" entry
-
-                <ul>
-                  <li class="fragment fade-in-then-semi-out">
-                    Counterparty to "Capability Grant"
-                  </li>
-                  <li class="fragment fade-in-then-semi-out">
-                    Private entry, not used in the security checks 
-                  </li>
-
-                  <li class="fragment fade-in-then-semi-out">
-                    Only for convenience
-                  </li>
-                </ul>
+                The secret can be stored in the source chain of the caller with
+                a "Capability Claim" entry
               </li>
             </ul>
           </li>
@@ -223,1549 +264,315 @@
             <ul>
               <li class="fragment fade-in-then-semi-out">
                 The zome call must carry the agent public key of the caller and
-                its signature and a capbility secret
+                its signature and also a capability secret
               </li>
               <li class="fragment fade-in-then-semi-out">
-                Only the calls that carry the secret specified and are made by one of the agents specified in the capability token can make the call
+                Only the calls that carry the secret specified and are made by
+                one of the agents specified in the capability token can make the
+                call
               </li>
             </ul>
           </li>
-
-          <li class="fragment fade-in-then-semi-out">
-            Unrestricted: disable security checks
-            <ul>
-              <li class="fragment fade-in-then-semi-out">
-                Any call to the function coming from any source will be executed
-              </li>
-            </ul>
-          </li>
-          
         </section>
 
         <section>
           <h3>Capability Tokens (III)</h3>
-
-            <pre
-              class="fragment fade-in"
-            ><code class="rust" data-noescape><span class="fragment fade-in-then-semi-out">use hdk::prelude::*;
-
-<span class="fragment fade-in">#[hdk_extern]
-fn zome_function_a(input: String) -> ExternResult&lt;ActionHash&gt; {
-  <span class="fragment fade-in">// Create</span>
-  <span class="fragment fade-in">// Create links</span>
-  <span class="fragment fade-in">// Query</span>
-  <span class="fragment fade-in">// ...</span>
-}
-</span>
-                
-
-<span class="fragment fade-in-then-semi-out">#[hdk_extern]
-fn allow_agent_to_call_zome_function_a(authorized_agent: AgentPubkey) -> ExternResult&lt;()&gt; {
-
-  let zome_name = zome_info()?.name;
-  let function_name = FunctionName(String::from("zome_function_a");
-
-  let mut functions: BTreeSet&lt;(ZomeName, FunctionName)&gt; = BTreeSet::new();
-  functions.insert((zome_name, function_name));
-
-  let mut assignees: BTreeSet&lt;AgentPubkey&gt; = BTreeSet::new();
-  assignees.insert(authorized_agent);
-
-  let access = CapAccess::Assigned {
-    secret: create_password(),
-    assignees
-  };
-
-  let capability_grant = CapGrantEntry {    
-    tag: String::from("zome_func"),
-    access,
-    functions
-  };
-
-  create_cap_grant(capability_grant)?;
-
-  Ok(())
-}
-</span>
-
-<span class="fragment fade-in">#[hdk_entry_helper]
-// We only need a string
-struct Anchor(String);</span>
-  
-<span class="fragment fade-in">#[hdk_entry_defs]
-#[unit_enum(UnitEntryTypes)]
-enum EntryTypes { 
-  Comment(Comment),
-  Anchor(Anchor),
-}</span>
-
-<span class="fragment fade-in">#[hdk_link_types]
-enum LinkTypes { 
-  AnchorToComment,
-}</span>
-
-</span></code></pre>
-
-            <pre
-              class="fragment fade-in"
-              style="margin-left: 16px"
-            ><code class="rust" data-noescape><span class="fragment fade-in-then-semi-out">#[hdk_extern]
-fn create_comment(comment: Comment) -> ExternResult&lt;ActionHash&gt; {
-  <span class="fragment fade-in">let comment_action_hash = create_entry(EntryTypes::Comment(comment))?; // Create comment as always</span>
-
-  <span class="fragment fade-in">let anchor = Anchor(String::from("all_comments"));</span>
-
-  <span class="fragment fade-in">let action_hash<span class="fragment fade-in-then-out popover">This hash is not deterministic: it will be different every time this function is executed</span> = create_entry(EntryTypes::Anchor(anchor))?;</span><span class="fragment fade-in"> // Create the anchor entry</span>
-  
-  <span class="fragment fade-in">let anchor_hash <span class="fragment fade-in-then-out popover">Hash is deterministic: will be the same independently of which cells executes this function</span>= hash_entry(anchor)?;  </span> <span class="fragment fade-in">// This hash is deterministic</span>
-
-  <span class="fragment fade-in">let all_comments_anchor =  anchor(LinkTypes::AnchorToComment)?;</span>
-
-  <span class="fragment fade-in">create_link(
-    <span class="fragment fade-in">anchor_hash, <span class="fragment fade-in">// Base hash</span></span>
-    <span class="fragment fade-in">comment_action_hash, <span class="fragment fade-in">// Target hash</span></span>
-    <span class="fragment fade-in">LinkTypes::AnchorToComment,<span class="fragment fade-in">// Link Type</span></span>
-    <span class="fragment fade-in">()<span class="fragment fade-in"> // Link tag</span></span>
-  )?;</span>
-
-  <span class="fragment fade-in">Ok(action_hash)</span>
-}</span>
-
-<span class="fragment fade-in">#[hdk_extern]
-fn get_all_comments_hashes(_: ()) -> ExternResult&lt;Vec&lt;ActionHash&gt;&gt; {
-  <span class="fragment fade-in">let anchor = Anchor(String::from("all_comments"));</span>
-
-  <span class="fragment fade-in">let anchor_hash = hash_entry(anchor)?;  </span> <span class="fragment fade-in">// Must be the same than the create function</span>
-
-  <span class="fragment fade-in">let links = get_links(anchor_hash, LinkTypes::AnchorToComment, None)?; // Get all the links created above</span>
-
-  <span class="fragment fade-in">let action_hashes: Vec&lt;ActionHash&gt; = links.into_iter()
-    .map(|link| ActionHash::from(link.target))
-    .collect(); // Extract the action hash from the links</span>
-  
-  <span class="fragment fade-in">Ok(action_hashes)</span>
-}  
-</span></code></pre>
-          </div>
-        </section>
-
-        <section>
-          <h3>Paths (I)</h3>
-
-          <li class="fragment fade-in-then-semi-out">
-            Anchors are great, but they can introduce problems
-            <ul>
-              <li class="fragment fade-in-then-semi-out">
-                If a large amount of links are attached to the same base, they
-                can become a burden of storage and bandwidth for the cells
-                holding those links
-                <ul>
-                  <li class="fragment fade-in-then-semi-out">
-                    This is know as a "DHT Hotspot"
-                  </li>
-                </ul>
-              </li>
-              <li class="fragment fade-in-then-semi-out">
-                They don't work well with complex queries that need filtering,
-                sorting, etc.
-                <ul>
-                  <li class="fragment fade-in-then-semi-out">
-                    For example, a query of the form
-                    "get_comment_by_date(start_date: Timestamp, end_date:
-                    Timestamp)"
-                  </li>
-                </ul>
-              </li>
-            </ul>
-          </li>
-          <li class="fragment fade-in-then-semi-out">Solution: paths</li>
-        </section>
-
-        <section>
-          <h3>Paths (II)</h3>
-
-          <div class="column">
-            <div class="column">
-              <li class="fragment fade-in-then-semi-out">
-                Built-in to the HDK
-              </li>
-              <li class="fragment fade-in-then-semi-out">
-                Paths are anchor trees
-                <ul>
-                  <li class="fragment fade-in-then-semi-out">
-                    Top level anchor acts as the root node
-                  </li>
-                  <li class="fragment fade-in-then-semi-out">
-                    This root node is linked to its children, which themselves
-                    are anchors
-                  </li>
-                  <li class="fragment fade-in-then-semi-out">
-                    This tree can be dynamically constructed and have arbitrary
-                    depth
-                  </li>
-                </ul>
-              </li>
-              <li class="fragment fade-in-then-semi-out">
-                They are composed of a vector of components
-
-                <ul>
-                  <li class="fragment fade-in-then-semi-out">
-                    Each component is an arbitrary byte array
-                  </li>
-                  <li class="fragment fade-in-then-semi-out">
-                    Normally constructed from a string
-                  </li>
-                </ul>
-              </li>
-            </div>
-
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              xmlns:xlink="http://www.w3.org/1999/xlink"
-              version="1.1"
-              width="900px"
-              height="413px"
-              style="margin-top: -54px"
-              class="fragment fade-in"
-              viewBox="-0.5 -0.5 841 441"
-            >
-              <!-- TODO: animate the SVG if Marcus likes it -->
-              <defs></defs>
-              <g>
-                <path
-                  d="M 120 110 L 183.63 110"
-                  fill="none"
-                  stroke="#ffffff"
-                  stroke-miterlimit="10"
-                  pointer-events="stroke"
-                ></path>
-                <path
-                  d="M 188.88 110 L 181.88 113.5 L 183.63 110 L 181.88 106.5 Z"
-                  fill="#ffffff"
-                  stroke="#ffffff"
-                  stroke-miterlimit="10"
-                  pointer-events="all"
-                ></path>
-                <path
-                  d="M 120 110 L 155 110 L 155 290 L 183.63 290"
-                  fill="none"
-                  stroke="#ffffff"
-                  stroke-miterlimit="10"
-                  pointer-events="stroke"
-                ></path>
-                <path
-                  d="M 188.88 290 L 181.88 293.5 L 183.63 290 L 181.88 286.5 Z"
-                  fill="#ffffff"
-                  stroke="#ffffff"
-                  stroke-miterlimit="10"
-                  pointer-events="all"
-                ></path>
-                <rect
-                  x="0"
-                  y="90"
-                  width="120"
-                  height="40"
-                  fill="rgb(255, 255, 255)"
-                  stroke="#ffffff"
-                  pointer-events="all"
-                >
-                  <text
-                    x="60"
-                    y="114"
-                    fill="rgb(0, 0, 0)"
-                    font-family="Helvetica"
-                    font-size="12px"
-                    text-anchor="middle"
-                  >
-                    all_comments
-                  </text>
-                </rect>
-                <g transform="translate(-0.5 -0.5)">
-                  <switch>
-                    <foreignObject
-                      pointer-events="none"
-                      width="100%"
-                      height="100%"
-                      requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-                      style="overflow: visible; text-align: left"
-                      ><div
-                        xmlns="http://www.w3.org/1999/xhtml"
-                        style="
-                          display: flex;
-                          align-items: unsafe center;
-                          justify-content: unsafe center;
-                          width: 118px;
-                          height: 1px;
-                          padding-top: 110px;
-                          margin-left: 1px;
-                        "
-                      >
-                        <div
-                          data-drawio-colors="color: rgb(0, 0, 0); "
-                          style="
-                            box-sizing: border-box;
-                            font-size: 0px;
-                            text-align: center;
-                          "
-                        >
-                          <div
-                            style="
-                              display: inline-block;
-                              font-size: 12px;
-                              font-family: Helvetica;
-                              color: rgb(0, 0, 0);
-                              line-height: 1.2;
-                              pointer-events: all;
-                              white-space: normal;
-                              overflow-wrap: normal;
-                            "
-                          >
-                            all_comments
-                          </div>
-                        </div>
-                      </div></foreignObject
-                    >
-                  </switch>
-                </g>
-                <path
-                  d="M 310 110 L 357.63 110"
-                  fill="none"
-                  stroke="#ffffff"
-                  stroke-miterlimit="10"
-                  pointer-events="stroke"
-                ></path>
-                <path
-                  d="M 362.88 110 L 355.88 113.5 L 357.63 110 L 355.88 106.5 Z"
-                  fill="#ffffff"
-                  stroke="#ffffff"
-                  stroke-miterlimit="10"
-                  pointer-events="all"
-                ></path>
-                <path
-                  d="M 310 110 L 337 110 L 337 170 L 357.63 170"
-                  fill="none"
-                  stroke="#ffffff"
-                  stroke-miterlimit="10"
-                  pointer-events="stroke"
-                ></path>
-                <path
-                  d="M 362.88 170 L 355.88 173.5 L 357.63 170 L 355.88 166.5 Z"
-                  fill="#ffffff"
-                  stroke="#ffffff"
-                  stroke-miterlimit="10"
-                  pointer-events="all"
-                ></path>
-                <path
-                  d="M 310 110 L 337 110 L 337 230 L 357.63 230"
-                  fill="none"
-                  stroke="#ffffff"
-                  stroke-miterlimit="10"
-                  pointer-events="stroke"
-                ></path>
-                <path
-                  d="M 362.88 230 L 355.88 233.5 L 357.63 230 L 355.88 226.5 Z"
-                  fill="#ffffff"
-                  stroke="#ffffff"
-                  stroke-miterlimit="10"
-                  pointer-events="all"
-                ></path>
-                <rect
-                  x="190"
-                  y="90"
-                  width="120"
-                  height="40"
-                  fill="rgb(255, 255, 255)"
-                  stroke="#ffffff"
-                  pointer-events="all"
-                ></rect>
-                <g transform="translate(-0.5 -0.5)">
-                  <switch>
-                    <foreignObject
-                      pointer-events="none"
-                      width="100%"
-                      height="100%"
-                      requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-                      style="overflow: visible; text-align: left"
-                      ><div
-                        xmlns="http://www.w3.org/1999/xhtml"
-                        style="
-                          display: flex;
-                          align-items: unsafe center;
-                          justify-content: unsafe center;
-                          width: 118px;
-                          height: 1px;
-                          padding-top: 110px;
-                          margin-left: 191px;
-                        "
-                      >
-                        <div
-                          data-drawio-colors="color: rgb(0, 0, 0); "
-                          style="
-                            box-sizing: border-box;
-                            font-size: 0px;
-                            text-align: center;
-                          "
-                        >
-                          <div
-                            style="
-                              display: inline-block;
-                              font-size: 12px;
-                              font-family: Helvetica;
-                              color: rgb(0, 0, 0);
-                              line-height: 1.2;
-                              pointer-events: all;
-                              white-space: normal;
-                              overflow-wrap: normal;
-                            "
-                          >
-                            all_comments.2022
-                          </div>
-                        </div>
-                      </div></foreignObject
-                    >
-                    <text
-                      x="250"
-                      y="114"
-                      fill="rgb(0, 0, 0)"
-                      font-family="Helvetica"
-                      font-size="12px"
-                      text-anchor="middle"
-                    >
-                      all_comments.2022
-                    </text>
-                  </switch>
-                </g>
-                <path
-                  d="M 510 170 Q 605 170 605 145 Q 605 120 693.63 120"
-                  fill="none"
-                  stroke="#ffffff"
-                  stroke-miterlimit="10"
-                  pointer-events="stroke"
-                ></path>
-                <path
-                  d="M 698.88 120 L 691.88 123.5 L 693.63 120 L 691.88 116.5 Z"
-                  fill="#ffffff"
-                  stroke="#ffffff"
-                  stroke-miterlimit="10"
-                  pointer-events="all"
-                ></path>
-                <path
-                  d="M 510 170 Q 615 170 615 175 Q 615 180 713.63 180"
-                  fill="none"
-                  stroke="#ffffff"
-                  stroke-miterlimit="10"
-                  pointer-events="stroke"
-                ></path>
-                <path
-                  d="M 718.88 180 L 711.88 183.5 L 713.63 180 L 711.88 176.5 Z"
-                  fill="#ffffff"
-                  stroke="#ffffff"
-                  stroke-miterlimit="10"
-                  pointer-events="all"
-                ></path>
-                <rect
-                  x="364"
-                  y="150"
-                  width="146"
-                  height="40"
-                  fill="rgb(255, 255, 255)"
-                  stroke="#ffffff"
-                  pointer-events="all"
-                ></rect>
-                <g transform="translate(-0.5 -0.5)">
-                  <switch>
-                    <foreignObject
-                      pointer-events="none"
-                      width="100%"
-                      height="100%"
-                      requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-                      style="overflow: visible; text-align: left"
-                      ><div
-                        xmlns="http://www.w3.org/1999/xhtml"
-                        style="
-                          display: flex;
-                          align-items: unsafe center;
-                          justify-content: unsafe center;
-                          width: 144px;
-                          height: 1px;
-                          padding-top: 170px;
-                          margin-left: 365px;
-                        "
-                      >
-                        <div
-                          data-drawio-colors="color: rgb(0, 0, 0); "
-                          style="
-                            box-sizing: border-box;
-                            font-size: 0px;
-                            text-align: center;
-                          "
-                        >
-                          <div
-                            style="
-                              display: inline-block;
-                              font-size: 12px;
-                              font-family: Helvetica;
-                              color: rgb(0, 0, 0);
-                              line-height: 1.2;
-                              pointer-events: all;
-                              white-space: normal;
-                              overflow-wrap: normal;
-                            "
-                          >
-                            all_comments.2022.6
-                          </div>
-                        </div>
-                      </div></foreignObject
-                    >
-                    <text
-                      x="437"
-                      y="174"
-                      fill="rgb(0, 0, 0)"
-                      font-family="Helvetica"
-                      font-size="12px"
-                      text-anchor="middle"
-                    >
-                      all_comments.2022.6
-                    </text>
-                  </switch>
-                </g>
-                <path
-                  d="M 310 290 L 357.63 290"
-                  fill="none"
-                  stroke="#ffffff"
-                  stroke-miterlimit="10"
-                  pointer-events="stroke"
-                ></path>
-                <path
-                  d="M 362.88 290 L 355.88 293.5 L 357.63 290 L 355.88 286.5 Z"
-                  fill="#ffffff"
-                  stroke="#ffffff"
-                  stroke-miterlimit="10"
-                  pointer-events="all"
-                ></path>
-                <path
-                  d="M 310 290 L 337 290 L 337 350 L 357.63 350"
-                  fill="none"
-                  stroke="#ffffff"
-                  stroke-miterlimit="10"
-                  pointer-events="stroke"
-                ></path>
-                <path
-                  d="M 362.88 350 L 355.88 353.5 L 357.63 350 L 355.88 346.5 Z"
-                  fill="#ffffff"
-                  stroke="#ffffff"
-                  stroke-miterlimit="10"
-                  pointer-events="all"
-                ></path>
-                <rect
-                  x="190"
-                  y="270"
-                  width="120"
-                  height="40"
-                  fill="rgb(255, 255, 255)"
-                  stroke="#ffffff"
-                  pointer-events="all"
-                ></rect>
-                <g transform="translate(-0.5 -0.5)">
-                  <switch>
-                    <foreignObject
-                      pointer-events="none"
-                      width="100%"
-                      height="100%"
-                      requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-                      style="overflow: visible; text-align: left"
-                      ><div
-                        xmlns="http://www.w3.org/1999/xhtml"
-                        style="
-                          display: flex;
-                          align-items: unsafe center;
-                          justify-content: unsafe center;
-                          width: 118px;
-                          height: 1px;
-                          padding-top: 290px;
-                          margin-left: 191px;
-                        "
-                      >
-                        <div
-                          data-drawio-colors="color: rgb(0, 0, 0); "
-                          style="
-                            box-sizing: border-box;
-                            font-size: 0px;
-                            text-align: center;
-                          "
-                        >
-                          <div
-                            style="
-                              display: inline-block;
-                              font-size: 12px;
-                              font-family: Helvetica;
-                              color: rgb(0, 0, 0);
-                              line-height: 1.2;
-                              pointer-events: all;
-                              white-space: normal;
-                              overflow-wrap: normal;
-                            "
-                          >
-                            all_comments.2021
-                          </div>
-                        </div>
-                      </div></foreignObject
-                    >
-                    <text
-                      x="250"
-                      y="294"
-                      fill="rgb(0, 0, 0)"
-                      font-family="Helvetica"
-                      font-size="12px"
-                      text-anchor="middle"
-                    >
-                      all_comments.2021
-                    </text>
-                  </switch>
-                </g>
-                <path
-                  d="M 510 230 Q 615 230 615 235 Q 615 240 713.63 240"
-                  fill="none"
-                  stroke="#ffffff"
-                  stroke-miterlimit="10"
-                  pointer-events="stroke"
-                ></path>
-                <path
-                  d="M 718.88 240 L 711.88 243.5 L 713.63 240 L 711.88 236.5 Z"
-                  fill="#ffffff"
-                  stroke="#ffffff"
-                  stroke-miterlimit="10"
-                  pointer-events="all"
-                ></path>
-                <rect
-                  x="364"
-                  y="210"
-                  width="146"
-                  height="40"
-                  fill="rgb(255, 255, 255)"
-                  stroke="#ffffff"
-                  pointer-events="all"
-                ></rect>
-                <g transform="translate(-0.5 -0.5)">
-                  <switch>
-                    <foreignObject
-                      pointer-events="none"
-                      width="100%"
-                      height="100%"
-                      requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-                      style="overflow: visible; text-align: left"
-                      ><div
-                        xmlns="http://www.w3.org/1999/xhtml"
-                        style="
-                          display: flex;
-                          align-items: unsafe center;
-                          justify-content: unsafe center;
-                          width: 144px;
-                          height: 1px;
-                          padding-top: 230px;
-                          margin-left: 365px;
-                        "
-                      >
-                        <div
-                          data-drawio-colors="color: rgb(0, 0, 0); "
-                          style="
-                            box-sizing: border-box;
-                            font-size: 0px;
-                            text-align: center;
-                          "
-                        >
-                          <div
-                            style="
-                              display: inline-block;
-                              font-size: 12px;
-                              font-family: Helvetica;
-                              color: rgb(0, 0, 0);
-                              line-height: 1.2;
-                              pointer-events: all;
-                              white-space: normal;
-                              overflow-wrap: normal;
-                            "
-                          >
-                            all_comments.2022.3
-                          </div>
-                        </div>
-                      </div></foreignObject
-                    >
-                    <text
-                      x="437"
-                      y="234"
-                      fill="rgb(0, 0, 0)"
-                      font-family="Helvetica"
-                      font-size="12px"
-                      text-anchor="middle"
-                    >
-                      all_comments.2022.3
-                    </text>
-                  </switch>
-                </g>
-                <path
-                  d="M 510 110 Q 580 110 580 46.37"
-                  fill="none"
-                  stroke="#ffffff"
-                  stroke-miterlimit="10"
-                  pointer-events="stroke"
-                ></path>
-                <path
-                  d="M 580 41.12 L 583.5 48.12 L 580 46.37 L 576.5 48.12 Z"
-                  fill="#ffffff"
-                  stroke="#ffffff"
-                  stroke-miterlimit="10"
-                  pointer-events="all"
-                ></path>
-                <path
-                  d="M 510 110 Q 585 110 585 90 Q 585 70 653.63 70"
-                  fill="none"
-                  stroke="#ffffff"
-                  stroke-miterlimit="10"
-                  pointer-events="stroke"
-                ></path>
-                <path
-                  d="M 658.88 70 L 651.88 73.5 L 653.63 70 L 651.88 66.5 Z"
-                  fill="#ffffff"
-                  stroke="#ffffff"
-                  stroke-miterlimit="10"
-                  pointer-events="all"
-                ></path>
-                <rect
-                  x="364"
-                  y="90"
-                  width="146"
-                  height="40"
-                  fill="rgb(255, 255, 255)"
-                  stroke="#ffffff"
-                  pointer-events="all"
-                ></rect>
-                <g transform="translate(-0.5 -0.5)">
-                  <switch>
-                    <foreignObject
-                      pointer-events="none"
-                      width="100%"
-                      height="100%"
-                      requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-                      style="overflow: visible; text-align: left"
-                      ><div
-                        xmlns="http://www.w3.org/1999/xhtml"
-                        style="
-                          display: flex;
-                          align-items: unsafe center;
-                          justify-content: unsafe center;
-                          width: 144px;
-                          height: 1px;
-                          padding-top: 110px;
-                          margin-left: 365px;
-                        "
-                      >
-                        <div
-                          data-drawio-colors="color: rgb(0, 0, 0); "
-                          style="
-                            box-sizing: border-box;
-                            font-size: 0px;
-                            text-align: center;
-                          "
-                        >
-                          <div
-                            style="
-                              display: inline-block;
-                              font-size: 12px;
-                              font-family: Helvetica;
-                              color: rgb(0, 0, 0);
-                              line-height: 1.2;
-                              pointer-events: all;
-                              white-space: normal;
-                              overflow-wrap: normal;
-                            "
-                          >
-                            all_comments.2022.7
-                          </div>
-                        </div>
-                      </div></foreignObject
-                    >
-                    <text
-                      x="437"
-                      y="114"
-                      fill="rgb(0, 0, 0)"
-                      font-family="Helvetica"
-                      font-size="12px"
-                      text-anchor="middle"
-                    >
-                      all_comments.2022.7
-                    </text>
-                  </switch>
-                </g>
-                <path
-                  d="M 510 350 Q 580 350 580 393.63"
-                  fill="none"
-                  stroke="#ffffff"
-                  stroke-miterlimit="10"
-                  pointer-events="stroke"
-                ></path>
-                <path
-                  d="M 580 398.88 L 576.5 391.88 L 580 393.63 L 583.5 391.88 Z"
-                  fill="#ffffff"
-                  stroke="#ffffff"
-                  stroke-miterlimit="10"
-                  pointer-events="all"
-                ></path>
-                <path
-                  d="M 510 350 Q 590 350 590 360 Q 590 370 663.63 370"
-                  fill="none"
-                  stroke="#ffffff"
-                  stroke-miterlimit="10"
-                  pointer-events="stroke"
-                ></path>
-                <path
-                  d="M 668.88 370 L 661.88 373.5 L 663.63 370 L 661.88 366.5 Z"
-                  fill="#ffffff"
-                  stroke="#ffffff"
-                  stroke-miterlimit="10"
-                  pointer-events="all"
-                ></path>
-                <rect
-                  x="364"
-                  y="330"
-                  width="146"
-                  height="40"
-                  fill="rgb(255, 255, 255)"
-                  stroke="#ffffff"
-                  pointer-events="all"
-                ></rect>
-                <g transform="translate(-0.5 -0.5)">
-                  <switch>
-                    <foreignObject
-                      pointer-events="none"
-                      width="100%"
-                      height="100%"
-                      requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-                      style="overflow: visible; text-align: left"
-                      ><div
-                        xmlns="http://www.w3.org/1999/xhtml"
-                        style="
-                          display: flex;
-                          align-items: unsafe center;
-                          justify-content: unsafe center;
-                          width: 144px;
-                          height: 1px;
-                          padding-top: 350px;
-                          margin-left: 365px;
-                        "
-                      >
-                        <div
-                          data-drawio-colors="color: rgb(0, 0, 0); "
-                          style="
-                            box-sizing: border-box;
-                            font-size: 0px;
-                            text-align: center;
-                          "
-                        >
-                          <div
-                            style="
-                              display: inline-block;
-                              font-size: 12px;
-                              font-family: Helvetica;
-                              color: rgb(0, 0, 0);
-                              line-height: 1.2;
-                              pointer-events: all;
-                              white-space: normal;
-                              overflow-wrap: normal;
-                            "
-                          >
-                            all_comments.2021.6
-                          </div>
-                        </div>
-                      </div></foreignObject
-                    >
-                    <text
-                      x="437"
-                      y="354"
-                      fill="rgb(0, 0, 0)"
-                      font-family="Helvetica"
-                      font-size="12px"
-                      text-anchor="middle"
-                    >
-                      all_comments.2021.6
-                    </text>
-                  </switch>
-                </g>
-                <path
-                  d="M 510 290 Q 605 290 605 300 Q 605 310 693.63 310"
-                  fill="none"
-                  stroke="#ffffff"
-                  stroke-miterlimit="10"
-                  pointer-events="stroke"
-                ></path>
-                <path
-                  d="M 698.88 310 L 691.88 313.5 L 693.63 310 L 691.88 306.5 Z"
-                  fill="#ffffff"
-                  stroke="#ffffff"
-                  stroke-miterlimit="10"
-                  pointer-events="all"
-                ></path>
-                <rect
-                  x="364"
-                  y="270"
-                  width="146"
-                  height="40"
-                  fill="rgb(255, 255, 255)"
-                  stroke="#ffffff"
-                  pointer-events="all"
-                ></rect>
-                <g transform="translate(-0.5 -0.5)">
-                  <switch>
-                    <foreignObject
-                      pointer-events="none"
-                      width="100%"
-                      height="100%"
-                      requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-                      style="overflow: visible; text-align: left"
-                      ><div
-                        xmlns="http://www.w3.org/1999/xhtml"
-                        style="
-                          display: flex;
-                          align-items: unsafe center;
-                          justify-content: unsafe center;
-                          width: 144px;
-                          height: 1px;
-                          padding-top: 290px;
-                          margin-left: 365px;
-                        "
-                      >
-                        <div
-                          data-drawio-colors="color: rgb(0, 0, 0); "
-                          style="
-                            box-sizing: border-box;
-                            font-size: 0px;
-                            text-align: center;
-                          "
-                        >
-                          <div
-                            style="
-                              display: inline-block;
-                              font-size: 12px;
-                              font-family: Helvetica;
-                              color: rgb(0, 0, 0);
-                              line-height: 1.2;
-                              pointer-events: all;
-                              white-space: normal;
-                              overflow-wrap: normal;
-                            "
-                          >
-                            all_comments.2021.3
-                          </div>
-                        </div>
-                      </div></foreignObject
-                    >
-                    <text
-                      x="437"
-                      y="294"
-                      fill="rgb(0, 0, 0)"
-                      font-family="Helvetica"
-                      font-size="12px"
-                      text-anchor="middle"
-                    >
-                      all_comments.2021.3
-                    </text>
-                  </switch>
-                </g>
-                <rect
-                  x="580"
-                  y="400"
-                  width="120"
-                  height="40"
-                  fill="rgb(255, 255, 255)"
-                  stroke="#ffffff"
-                  pointer-events="all"
-                ></rect>
-                <g transform="translate(-0.5 -0.5)">
-                  <switch>
-                    <foreignObject
-                      pointer-events="none"
-                      width="100%"
-                      height="100%"
-                      requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-                      style="overflow: visible; text-align: left"
-                      ><div
-                        xmlns="http://www.w3.org/1999/xhtml"
-                        style="
-                          display: flex;
-                          align-items: unsafe center;
-                          justify-content: unsafe center;
-                          width: 118px;
-                          height: 1px;
-                          padding-top: 420px;
-                          margin-left: 581px;
-                        "
-                      >
-                        <div
-                          data-drawio-colors="color: rgb(0, 0, 0); "
-                          style="
-                            box-sizing: border-box;
-                            font-size: 0px;
-                            text-align: center;
-                          "
-                        >
-                          <div
-                            style="
-                              display: inline-block;
-                              font-size: 12px;
-                              font-family: Helvetica;
-                              color: rgb(0, 0, 0);
-                              line-height: 1.2;
-                              pointer-events: all;
-                              white-space: normal;
-                              overflow-wrap: normal;
-                            "
-                          >
-                            comment1
-                          </div>
-                        </div>
-                      </div></foreignObject
-                    >
-                    <text
-                      x="640"
-                      y="424"
-                      fill="rgb(0, 0, 0)"
-                      font-family="Helvetica"
-                      font-size="12px"
-                      text-anchor="middle"
-                    >
-                      comment1
-                    </text>
-                  </switch>
-                </g>
-                <rect
-                  x="670"
-                  y="350"
-                  width="120"
-                  height="40"
-                  fill="rgb(255, 255, 255)"
-                  stroke="#ffffff"
-                  pointer-events="all"
-                ></rect>
-                <g transform="translate(-0.5 -0.5)">
-                  <switch>
-                    <foreignObject
-                      pointer-events="none"
-                      width="100%"
-                      height="100%"
-                      requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-                      style="overflow: visible; text-align: left"
-                      ><div
-                        xmlns="http://www.w3.org/1999/xhtml"
-                        style="
-                          display: flex;
-                          align-items: unsafe center;
-                          justify-content: unsafe center;
-                          width: 118px;
-                          height: 1px;
-                          padding-top: 370px;
-                          margin-left: 671px;
-                        "
-                      >
-                        <div
-                          data-drawio-colors="color: rgb(0, 0, 0); "
-                          style="
-                            box-sizing: border-box;
-                            font-size: 0px;
-                            text-align: center;
-                          "
-                        >
-                          <div
-                            style="
-                              display: inline-block;
-                              font-size: 12px;
-                              font-family: Helvetica;
-                              color: rgb(0, 0, 0);
-                              line-height: 1.2;
-                              pointer-events: all;
-                              white-space: normal;
-                              overflow-wrap: normal;
-                            "
-                          >
-                            comment2
-                          </div>
-                        </div>
-                      </div></foreignObject
-                    >
-                    <text
-                      x="730"
-                      y="374"
-                      fill="rgb(0, 0, 0)"
-                      font-family="Helvetica"
-                      font-size="12px"
-                      text-anchor="middle"
-                    >
-                      comment2
-                    </text>
-                  </switch>
-                </g>
-                <rect
-                  x="700"
-                  y="290"
-                  width="120"
-                  height="40"
-                  fill="rgb(255, 255, 255)"
-                  stroke="#ffffff"
-                  pointer-events="all"
-                ></rect>
-                <g transform="translate(-0.5 -0.5)">
-                  <switch>
-                    <foreignObject
-                      pointer-events="none"
-                      width="100%"
-                      height="100%"
-                      requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-                      style="overflow: visible; text-align: left"
-                      ><div
-                        xmlns="http://www.w3.org/1999/xhtml"
-                        style="
-                          display: flex;
-                          align-items: unsafe center;
-                          justify-content: unsafe center;
-                          width: 118px;
-                          height: 1px;
-                          padding-top: 310px;
-                          margin-left: 701px;
-                        "
-                      >
-                        <div
-                          data-drawio-colors="color: rgb(0, 0, 0); "
-                          style="
-                            box-sizing: border-box;
-                            font-size: 0px;
-                            text-align: center;
-                          "
-                        >
-                          <div
-                            style="
-                              display: inline-block;
-                              font-size: 12px;
-                              font-family: Helvetica;
-                              color: rgb(0, 0, 0);
-                              line-height: 1.2;
-                              pointer-events: all;
-                              white-space: normal;
-                              overflow-wrap: normal;
-                            "
-                          >
-                            comment4
-                          </div>
-                        </div>
-                      </div></foreignObject
-                    >
-                    <text
-                      x="760"
-                      y="314"
-                      fill="rgb(0, 0, 0)"
-                      font-family="Helvetica"
-                      font-size="12px"
-                      text-anchor="middle"
-                    >
-                      comment4
-                    </text>
-                  </switch>
-                </g>
-                <rect
-                  x="720"
-                  y="220"
-                  width="120"
-                  height="40"
-                  fill="rgb(255, 255, 255)"
-                  stroke="#ffffff"
-                  pointer-events="all"
-                ></rect>
-                <g transform="translate(-0.5 -0.5)">
-                  <switch>
-                    <foreignObject
-                      pointer-events="none"
-                      width="100%"
-                      height="100%"
-                      requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-                      style="overflow: visible; text-align: left"
-                      ><div
-                        xmlns="http://www.w3.org/1999/xhtml"
-                        style="
-                          display: flex;
-                          align-items: unsafe center;
-                          justify-content: unsafe center;
-                          width: 118px;
-                          height: 1px;
-                          padding-top: 240px;
-                          margin-left: 721px;
-                        "
-                      >
-                        <div
-                          data-drawio-colors="color: rgb(0, 0, 0); "
-                          style="
-                            box-sizing: border-box;
-                            font-size: 0px;
-                            text-align: center;
-                          "
-                        >
-                          <div
-                            style="
-                              display: inline-block;
-                              font-size: 12px;
-                              font-family: Helvetica;
-                              color: rgb(0, 0, 0);
-                              line-height: 1.2;
-                              pointer-events: all;
-                              white-space: normal;
-                              overflow-wrap: normal;
-                            "
-                          >
-                            comment5
-                          </div>
-                        </div>
-                      </div></foreignObject
-                    >
-                    <text
-                      x="780"
-                      y="244"
-                      fill="rgb(0, 0, 0)"
-                      font-family="Helvetica"
-                      font-size="12px"
-                      text-anchor="middle"
-                    >
-                      comment5
-                    </text>
-                  </switch>
-                </g>
-                <rect
-                  x="720"
-                  y="160"
-                  width="120"
-                  height="40"
-                  fill="rgb(255, 255, 255)"
-                  stroke="#ffffff"
-                  pointer-events="all"
-                ></rect>
-                <g transform="translate(-0.5 -0.5)">
-                  <switch>
-                    <foreignObject
-                      pointer-events="none"
-                      width="100%"
-                      height="100%"
-                      requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-                      style="overflow: visible; text-align: left"
-                      ><div
-                        xmlns="http://www.w3.org/1999/xhtml"
-                        style="
-                          display: flex;
-                          align-items: unsafe center;
-                          justify-content: unsafe center;
-                          width: 118px;
-                          height: 1px;
-                          padding-top: 180px;
-                          margin-left: 721px;
-                        "
-                      >
-                        <div
-                          data-drawio-colors="color: rgb(0, 0, 0); "
-                          style="
-                            box-sizing: border-box;
-                            font-size: 0px;
-                            text-align: center;
-                          "
-                        >
-                          <div
-                            style="
-                              display: inline-block;
-                              font-size: 12px;
-                              font-family: Helvetica;
-                              color: rgb(0, 0, 0);
-                              line-height: 1.2;
-                              pointer-events: all;
-                              white-space: normal;
-                              overflow-wrap: normal;
-                            "
-                          >
-                            comment6
-                          </div>
-                        </div>
-                      </div></foreignObject
-                    >
-                    <text
-                      x="780"
-                      y="184"
-                      fill="rgb(0, 0, 0)"
-                      font-family="Helvetica"
-                      font-size="12px"
-                      text-anchor="middle"
-                    >
-                      comment6
-                    </text>
-                  </switch>
-                </g>
-                <rect
-                  x="700"
-                  y="100"
-                  width="120"
-                  height="40"
-                  fill="rgb(255, 255, 255)"
-                  stroke="#ffffff"
-                  pointer-events="all"
-                ></rect>
-                <g transform="translate(-0.5 -0.5)">
-                  <switch>
-                    <foreignObject
-                      pointer-events="none"
-                      width="100%"
-                      height="100%"
-                      requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-                      style="overflow: visible; text-align: left"
-                      ><div
-                        xmlns="http://www.w3.org/1999/xhtml"
-                        style="
-                          display: flex;
-                          align-items: unsafe center;
-                          justify-content: unsafe center;
-                          width: 118px;
-                          height: 1px;
-                          padding-top: 120px;
-                          margin-left: 701px;
-                        "
-                      >
-                        <div
-                          data-drawio-colors="color: rgb(0, 0, 0); "
-                          style="
-                            box-sizing: border-box;
-                            font-size: 0px;
-                            text-align: center;
-                          "
-                        >
-                          <div
-                            style="
-                              display: inline-block;
-                              font-size: 12px;
-                              font-family: Helvetica;
-                              color: rgb(0, 0, 0);
-                              line-height: 1.2;
-                              pointer-events: all;
-                              white-space: normal;
-                              overflow-wrap: normal;
-                            "
-                          >
-                            comment7
-                          </div>
-                        </div>
-                      </div></foreignObject
-                    >
-                    <text
-                      x="760"
-                      y="124"
-                      fill="rgb(0, 0, 0)"
-                      font-family="Helvetica"
-                      font-size="12px"
-                      text-anchor="middle"
-                    >
-                      comment7
-                    </text>
-                  </switch>
-                </g>
-                <rect
-                  x="660"
-                  y="50"
-                  width="120"
-                  height="40"
-                  fill="rgb(255, 255, 255)"
-                  stroke="#ffffff"
-                  pointer-events="all"
-                ></rect>
-                <g transform="translate(-0.5 -0.5)">
-                  <switch>
-                    <foreignObject
-                      pointer-events="none"
-                      width="100%"
-                      height="100%"
-                      requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-                      style="overflow: visible; text-align: left"
-                      ><div
-                        xmlns="http://www.w3.org/1999/xhtml"
-                        style="
-                          display: flex;
-                          align-items: unsafe center;
-                          justify-content: unsafe center;
-                          width: 118px;
-                          height: 1px;
-                          padding-top: 70px;
-                          margin-left: 661px;
-                        "
-                      >
-                        <div
-                          data-drawio-colors="color: rgb(0, 0, 0); "
-                          style="
-                            box-sizing: border-box;
-                            font-size: 0px;
-                            text-align: center;
-                          "
-                        >
-                          <div
-                            style="
-                              display: inline-block;
-                              font-size: 12px;
-                              font-family: Helvetica;
-                              color: rgb(0, 0, 0);
-                              line-height: 1.2;
-                              pointer-events: all;
-                              white-space: normal;
-                              overflow-wrap: normal;
-                            "
-                          >
-                            comment8
-                          </div>
-                        </div>
-                      </div></foreignObject
-                    >
-                    <text
-                      x="720"
-                      y="74"
-                      fill="rgb(0, 0, 0)"
-                      font-family="Helvetica"
-                      font-size="12px"
-                      text-anchor="middle"
-                    >
-                      comment8
-                    </text>
-                  </switch>
-                </g>
-                <rect
-                  x="580"
-                  y="0"
-                  width="120"
-                  height="40"
-                  fill="rgb(255, 255, 255)"
-                  stroke="#ffffff"
-                  pointer-events="all"
-                ></rect>
-                <g transform="translate(-0.5 -0.5)">
-                  <switch>
-                    <foreignObject
-                      pointer-events="none"
-                      width="100%"
-                      height="100%"
-                      requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-                      style="overflow: visible; text-align: left"
-                      ><div
-                        xmlns="http://www.w3.org/1999/xhtml"
-                        style="
-                          display: flex;
-                          align-items: unsafe center;
-                          justify-content: unsafe center;
-                          width: 118px;
-                          height: 1px;
-                          padding-top: 20px;
-                          margin-left: 581px;
-                        "
-                      >
-                        <div
-                          data-drawio-colors="color: rgb(0, 0, 0); "
-                          style="
-                            box-sizing: border-box;
-                            font-size: 0px;
-                            text-align: center;
-                          "
-                        >
-                          <div
-                            style="
-                              display: inline-block;
-                              font-size: 12px;
-                              font-family: Helvetica;
-                              color: rgb(0, 0, 0);
-                              line-height: 1.2;
-                              pointer-events: all;
-                              white-space: normal;
-                              overflow-wrap: normal;
-                            "
-                          >
-                            comment9
-                          </div>
-                        </div>
-                      </div></foreignObject
-                    >
-                    <text
-                      x="640"
-                      y="24"
-                      fill="rgb(0, 0, 0)"
-                      font-family="Helvetica"
-                      font-size="12px"
-                      text-anchor="middle"
-                    >
-                      comment9
-                    </text>
-                  </switch>
-                </g>
-              </g>
-              <switch>
-                <g
-                  requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-                ></g>
-                <a
-                  transform="translate(0,-5)"
-                  xlink:href="https://www.diagrams.net/doc/faq/svg-export-text-problems"
-                  target="_blank"
-                >
-                  <text text-anchor="middle" font-size="10px" x="50%" y="100%">
-                    Text is not SVG - cannot display
-                  </text>
-                </a>
-              </switch>
-            </svg>
-          </div>
-        </section>
-
-        <section>
-          <h3>Paths (III)</h3>
+          <h4>Create unrestricted grant</h4>
 
           <pre
             class="fragment fade-in"
           ><code class="rust" data-noescape><span class="fragment fade-in-then-semi-out">use hdk::prelude::*;
-<span class="fragment fade-in">use integrity_zome::{EntryTypes, Comment, LinkTypes}; // Import the types defined in our integrity zome</span>
-<span class="fragment fade-in">use chrono::*; // Import the chrono crate for time related utilites</span>
 
-<span class="fragment fade-in-then-semi-out">#[hdk_extern]
-fn create_comment(comment: Comment) -> ExternResult&lt;ActionHash&gt; {
-  <span class="fragment fade-in">let comment_action_hash = create_entry(EntryTypes::Comment(comment))?; // Create comment as always</span>
-  
-  <span class="fragment fade-in">let (secs, nsecs) = sys_time()?.as_seconds_and_nanos(); // Get the current timestamp in microseconds</span>
-  <span class="fragment fade-in">let dt: DateTime&lt;Utc&gt; = DateTime::from_utc(NaiveDateTime::from_timestamp(secs, nsecs), Utc);</span>
+<span class="fragment fade-in">#[hdk_extern]
+fn zome_function_a(input: String)<span class="fragment fade-in-then-out popover">We want to grant a capability to execute this function</span> -> ExternResult&lt;ActionHash&gt; { <span class="fragment fade-in">/** Create, create links, get, query... */</span> } </span>
 
-  <span class="fragment fade-in">let path = Path::from(format!("all_comments.{}.{}"<span class="fragment fade-in-then-out popover">The '.' is the separator between components</span>, dt.year(), dt.month()));</span><span class="fragment fade-in"> // Builds the path "all_comments.2022.7"</span>
-  <span class="fragment fade-in">let typed_path = path.typed(LinkTypes::PathTimeIndex)?;<span class="fragment fade-in-then-out popover">"TypedPath" is a path with all the links of a certain type</span></span><span class="fragment fade-in"> // Add the link type to the path</span>
-  <span class="fragment fade-in">typed_path.ensure()?;<span class="fragment fade-in-then-out popover">Creates the path tree structure, and all the necessary links</span></span><span class="fragment fade-in"> // Build the path's anchor tree</span>
-  
-  <span class="fragment fade-in">create_link(
-    <span class="fragment fade-in">typed_path.path_entry_hash()?, <span class="fragment fade-in-then-out popover">Entry hash of the path</span></span><span class="fragment fade-in">comment_action_hash,</span> <span class="fragment fade-in">LinkTypes::PathToComment,</span> <span class="fragment fade-in">()</span>
-  )?;</span>
+<span class="fragment fade-in"><span class="fragment fade-in">// Which functions do we grant access to? </span>
+fn functions_to_grant_capability_for() -> BTreeSet&lt;(ZomeName, FunctionName)&gt;<span class="fragment fade-in-then-out popover">Type required by the API to specify the functions</span> { <span class="fragment fade-in">// Type required by the HDK API</span>
+  <span class="fragment fade-in">let zome_name = zome_info()?.name; // Getting the zome name</span>
+  <span class="fragment fade-in">let function_name = FunctionName<span class="fragment fade-in-then-out popover">Just a wrapper around a "String"</span>(String::from("zome_function_a");</span><span class="fragment fade-in"> // Wrapper around a "String"</span>
 
-  <span class="fragment fade-in">Ok(action_hash)</span>
+  <span class="fragment fade-in">let mut functions: BTreeSet&lt;(ZomeName, FunctionName)&gt; = BTreeSet::new();</span>
+  <span class="fragment fade-in">functions.insert((zome_name, function_name));<span class="fragment fade-in-then-out popover">We want to grant access to the zome function "zome_function_a" of this zome</span></span><span class="fragment fade-in"> // Granting access to the function in this zome</span>
+
+  <span class="fragment fade-in">functions</span>
 }</span>
 
 <span class="fragment fade-in">#[hdk_extern]
-fn get_comments_by_year(year: u32) -> ExternResult&lt;Vec&lt;ActionHash&gt;&gt; {
-  <span class="fragment fade-in">let year_path = Path::from(format!("all_comments.{}", year))<span class="fragment fade-in-then-out popover">Build the anchor in the intermediate node</span>.typed(LinkTypes::PathTimeIndex);</span>
-  
-  <span class="fragment fade-in">let month_paths: Vec&lt;Path&gt; = year_path.children_paths()?;<span class="fragment fade-in-then-out popover">Retrieves all the children node month paths</span></span>
+fn grant_unrestricted_capability(_: ()) -> ExternResult&lt;()&gt; {
+  <span class="fragment fade-in">let functions = functions_to_grant_capability_for();</span>
 
-  <span class="fragment fade-in">let mut all_links: Vec&lt;Link&gt; = vec![];</span>
-  <span class="fragment fade-in">for path in month_paths {
-    <span class="fragment fade-in">let mut links = get_links(anchor_hash, LinkTypes::PathToComment, None)?; // Get all the links created above</span>
-    <span class="fragment fade-in">all_links.append(&mut links); // Collect the links</span>
-  }</span>
+  <span class="fragment fade-in">let access = CapAccess::Unrestricted;<span class="fragment fade-in-then-out popover">Anyone can call this function, even unidentified sources</span></span><span class="fragment fade-in"> // Can be called from any source</span>
 
-  <span class="fragment fade-in">let all_links: Vec&lt;ActionHash&gt; = links.into_iter()
-    .map(|link| ActionHash::from(link.target))
-    .collect(); // Extract the action hash from the links</span>
-  
-  <span class="fragment fade-in">Ok(action_hashes)</span>
-}  
+  <span class="fragment fade-in">let capability_grant = CapGrantEntry<span class="fragment fade-in-then-out popover">Private entry built-in to Holochain and the HDK</span> { <span class="fragment fade-in"> // Built-in private entry</span>
+    <span class="fragment fade-in">functions,</span>
+    <span class="fragment fade-in">access,</span>
+    <span class="fragment fade-in">tag: String::from("unrestricted"),<span class="fragment fade-in-then-out popover">Arbitrary humand readable tag, just for convenience</span></span><span class="fragment fade-in"> // Convenience tag</span>
+  };</span>
+
+  <span class="fragment fade-in">create_cap_grant(capability_grant)?;<span class="fragment fade-in-then-out popover">Actually commit the capability: now "zome_function_a" can be called from any source</span></span> <span class="fragment fade-in">// Actually commit the capability</span>
+
+  <span class="fragment fade-in">Ok(())</span>
+}
 </span>
+
 </span></code></pre>
         </section>
+
+        <section>
+          <h3>Capability Tokens (IV)</h3>
+          <h4>Create transferable grant</h4>
+
+          <pre
+            class="fragment fade-in"
+          ><code class="rust" data-noescape><span class="fragment fade-in"><span class="fragment fade-in">// Which secret do they need to know to call those functions? </span>
+fn cap_secret() -> ExternResult&lt;CapSecret&gt;<span class="fragment fade-in-then-out popover">Wrapper around a byte array</span> { <span class="fragment fade-in">// Wrapper around a byte array</span>
+
+  <span class="fragment fade-in">let password = String::from("a secret password");</span><span class="fragment fade-in"> // Chosen by the app developer</span>
+  <span class="fragment fade-in">let secret_bytes = SerializedBytes::try_from(password<span class="fragment fade-in-then-out popover">Could be any type that derives "Serialize" and "Deserialize"</span>).map_err(|err| wasm_error!(err.into()))?;</span><span class="fragment fade-in"> // Could be any other type</span>
+  <span class="fragment fade-in">let secret = CapSecret::try_from(secret_bytes)<span class="fragment fade-in-then-out popover">Builds the secret from "SerializedBytes"</span>.map_err(|err| wasm_error!(err.into()))?;</span><span class="fragment fade-in"> // Building the secret from "SerializedBytes"</span>          
+
+  <span class="fragment fade-in">Ok(secret)</span>
+}</span>
+
+<span class="fragment fade-in">#[hdk_extern]
+fn grant_transferable_capability(authorized_agent: AgentPubkey) -> ExternResult&lt;()&gt; {
+  <span class="fragment fade-in">let secret = cap_secret()?;</span>
+
+  <span class="fragment fade-in">let access = CapAccess::Transferable {<span class="fragment fade-in-then-out popover">Only requests that carry this secret will be able to execute "zome_function_a"</span><span class="fragment fade-in"> // Requests are required to carry this secret</span> 
+    secret,
+  };</span>
+  <span class="fragment fade-in">let capability_grant = CapGrantEntry {
+    <span class="fragment fade-in">functions: functions_to_grant_capability_for(),</span>
+    <span class="fragment fade-in">access,</span>
+    <span class="fragment fade-in">tag: String::from("transferable capability"), // Convenience tag</span>
+  };</span>
+
+  <span class="fragment fade-in">create_cap_grant(capability_grant)?;</span>
+
+  <span class="fragment fade-in">Ok(())</span>
+}
+</span>
+              
+</code></pre>
+        </section>
+
+        <section>
+          <h3>Capability Tokens (V)</h3>
+          <h4>Create assigned grant</h4>
+
+          <pre
+            class="fragment fade-in"
+          ><code class="rust" data-noescape><span class="fragment fade-in">use hdk::prelude::*;
+
+<span class="fragment fade-in">#[hdk_extern]
+fn grant_assigned_capability(authorized_agent: AgentPubkey) -> ExternResult&lt;()&gt; {
+
+  <span class="fragment fade-in">/** To whom do we grant access to those functions? */</span>
+  <span class="fragment fade-in">let mut assignees: BTreeSet&lt;AgentPubkey&gt;<span class="fragment fade-in-then-out popover">Type required by the API to specify the granted agents</span> = BTreeSet::new();</span>
+  <span class="fragment fade-in">assignees.insert(authorized_agent);<span class="fragment fade-in-then-out popover">Assigning the authorized_agent</span></span><span class="fragment fade-in"> // Assign capabilty to the given "authorized_agent"</span>
+
+  <span class="fragment fade-in">let access = CapAccess::Assigned {<span class="fragment fade-in-then-out popover">Only requests that <strong>both</strong> carry this secret and are signed by any of the assignees will be able to execute "zome_function_a"</span><span class="fragment fade-in"> // Requests are required to carry this secret and be signed by one of the assignees</span> 
+    secret: cap_secret(),
+    assignees
+  };</span>
+  <span class="fragment fade-in">let capability_grant = CapGrantEntry {
+    <span class="fragment fade-in">functions: functions_to_grant_capability_for(),</span>
+    <span class="fragment fade-in">access,</span>
+    <span class="fragment fade-in">tag: String::from("assigned capability"), // Convenience tag</span>
+  };</span>
+
+  <span class="fragment fade-in">create_cap_grant(capability_grant)?;</span>
+
+  <span class="fragment fade-in">Ok(())</span>
+}
+</span>
+
+</span></code></pre>
+        </section>
+
+        <section>
+          <h3>Capability Tokens (VI)</h3>
+          <h4>Create capability claim</h4>
+
+          <pre
+            class="fragment fade-in"
+          ><code class="rust" data-noescape><span class="fragment fade-in">use hdk::prelude::*;
+
+<span class="fragment fade-in">#[hdk_extern]
+fn create_claim_for_zome_function_a(<span class="fragment fade-in">grant_data: (AgentPubkey, Secret)</span><span class="fragment fade-in-then-out popover">Result of another process, maybe a bluetooth handshake</span>) -> ExternResult&lt;()&gt; {
+  
+  <span class="fragment fade-in">let cap_claim = CapClaimEntry<span class="fragment fade-in-then-out popover">Private entry built-in to Holochain and the HDK</span> { <span class="fragment fade-in">// Built-in private entry</span>
+    <span class="fragment fade-in">grantor: grant_data.0,</span><span class="fragment fade-in-then-out popover">Just to remember which agent to call</span><span class="fragment fade-in"> // Just to remember which agent to call</span>
+    <span class="fragment fade-in">secret: grant_data.1,</span><span class="fragment fade-in-then-out popover">Store the secret to be able to add it to the request</span><span class="fragment fade-in"> // Store the secret</span>
+    <span class="fragment fade-in">tag: String::from("claim for zome_function_a"),<span class="fragment fade-in-then-out popover">Can be totally different from the tag in the capability grant</span><span class="fragment fade-in"> // Can be different from the tag in the grant</span></span>
+  };</span>
+
+  <span class="fragment fade-in">create_cap_claim(cap_claim)?;</span><span class="fragment fade-in-then-out popover">Create the claim privately, nothing else happens</span><span class="fragment fade-in"> // Commit the claim privately</span>
+
+  Ok(())
+}</span>
+</span></code></pre>
+        </section>
+
+        <section>
+          <h3>3 Sources of Zome Calls</h3>
+
+          <li class="fragment fade-in-then-semi-out">
+            Conductor receives request on the application port
+            <ul>
+              <li class="fragment fade-in-then-semi-out">
+                Any process external to Holochain can bind to the application
+                port of the conductor using a websockets
+                <!-- TODO: fix when this has been clarified by Art -->
+              </li>
+              <li class="fragment fade-in-then-semi-out">Usually a web GUI</li>
+            </ul>
+          </li>
+          <li class="fragment fade-in-then-semi-out">
+            Bridge call
+            <ul>
+              <li class="fragment fade-in-then-semi-out">
+                Any cell in a conductor can call another cell in the same
+                conductor, by cell ID
+                <!-- TODO: fix when this has been clarified by Art -->
+              </li>
+            </ul>
+          </li>
+          <li class="fragment fade-in-then-semi-out">
+            Remote call
+            <ul>
+              <li class="fragment fade-in-then-semi-out">
+                Any cell in a network can call another cell in the same network,
+                by agent public key
+              </li>
+            </ul>
+          </li>
+        </section>
+
+        <!-- TODO: Example of JS UI call? -->
+
+        <section>
+          <h3>Bridge call</h3>
+
+          <!-- TODO: put example when the API has been clarified -->
+        </section>
+
+        <section>
+          <h3>Remote call</h3>
+
+          <pre
+            class="fragment fade-in"
+          ><code class="rust" data-noescape><span class="fragment fade-in">use hdk::prelude::*;</span>
+
+<span class="fragment fade-in">#[hdk_extern]
+fn zome_function_a(input: String)<span class="fragment fade-in-then-out popover">We want to grant a capability to execute this function</span> -> ExternResult&lt;ActionHash&gt; { <span class="fragment fade-in">/** Create, create links, get, query... */</span> } </span>
+
+<span class="fragment fade-in">#[hdk_extern]
+fn query_cap_claim_for(grantor: &AgentPubkey) -> ExternResult&lt;CapClaimEntry&gt;  { /** query and find */ } <!-- TODO: can we leave a function without implementing?-->
+</span>
+
+<span class="fragment fade-in">#[hdk_extern]
+fn call_zome_function_a(callee: AgentPubkey)<span class="fragment fade-in-then-out popover">We want to call "zome_function_a" in the "callee"'s cell and return its result</span> -> ExternResult&lt;ActionHash&gt; { <span class="fragment fade-in">// Call "callee"'s "zome_function_a" and return its result </span>
+  <span class="fragment fade-in">let cap_claim_entry: CapClaimEntry = query_cap_claim_for(&callee)?;</span><span class="fragment fade-in-then-out popover">Assumes that a capability claim for this agent has already been committed in the past</span><span class="fragment fade-in">Assummes the claim was committed in the past</span>
+
+  <span class="fragment fade-in">let zome_call_response = call_remote(
+    <span class="fragment fade-in">callee,</span><span class="fragment fade-in-then-out popover">The agent we are calling, must be a participant in this network</span><span class="fragment fade-in"> // Peer in this network we are calling</span>
+    <span class="fragment fade-in">zome_name()?.name, </span><span class="fragment fade-in-then-out popover">We are calling a function defined in this zome</span><span class="fragment fade-in"> // We are calling a function defined in this zome </span>
+    <span class="fragment fade-in">FunctionName(String::from("zome_function_a")), </span><span class="fragment fade-in-then-out popover">The name of the function we are calling</span><span class="fragment fade-in"> // Function name</span>
+    <span class="fragment fade-in">cap_claim_entry.secret, </span><span class="fragment fade-in-then-out popover">The capability secret that we committed privately as the claim</span><span class="fragment fade-in"> // Cap secret</span>
+    <span class="fragment fade-in">String::from("example input")</span><span class="fragment fade-in-then-out popover">Input parameter for the function, must derive "Serialize" and "Deserialize"</span><span class="fragment fade-in"> // Input parameter</span>
+  );?</span>
+
+  <span class="fragment fade-in">match zome_call_response {
+    <span class="fragment fade-in">ZomeCallResponse::Ok(result<span class="fragment fade-in-then-out popover">Of type ExternIO, wrapper around byte array</span>) => { <span class="fragment fade-in">// ExternIO is a wrapper around a byte array</span>
+      <span class="fragment fade-in">let action_hash = result.decode()<span class="fragment fade-in-then-out popover">".decode()" deserializes the byte array, trying to interpret it as the requested type</span>.map_err(|err| wasm_error!(err.into()))?;</span><span class="fragment fade-in"> // Deserialize byte array</span>
+      <span class="fragment fade-in">Ok(action_hash)</span>
+    },</span>
+    <span class="fragment fade-in">ZomeCallResponse::Unauthorized(cell_id, zome_name, function_name, callee) => {<span class="fragment fade-in-then-out popover">Callee deleted the capability grant before us tried to call id</span><span class="fragment fade-in"> // Callee deleted the capability grant</span>
+      <span class="fragment fade-in">Err(wasm_error!(WasmErrorInner::Guest("Agent revoked the capability".into())))</span>
+    },</span>
+    <span class="fragment fade-in">ZomeCallResponse::NetworkError(err) => {<span class="fragment fade-in"> // Network error, we could try again</span>
+      <span class="fragment fade-in">Err(wasm_error!(WasmErrorInner::Guest(format!("There was a network error: {:?}", err)))</span>
+    },</span>
+    <span class="fragment fade-in">ZomeCallResponse::CountersigningSession(err) => {<span class="fragment fade-in-then-out popover">We are going to talk about countersigning entries in the future</span> <!-- TODO: what to do about this knot? -->
+      <span class="fragment fade-in">Err(wasm_error!(WasmErrorInner::Guest(format!("There was a network error: {:?}", err))))</span>
+    },</span>
+  }</span>
+}
+</span></code></pre>
+        
+</section>
+
+
+<section>
+  <h3>Signals</h3>
+
+  <li class="fragment fade-in-then-semi-out">Don't wait for a response: fire and forget </li>
+  <li class="fragment fade-in-then-semi-out">Not reliable: signals can be lost without our code knowing </li>
+  <li class="fragment fade-in-then-semi-out">2 types:
+  
+    <ul>
+      <li class="fragment fade-in-then-semi-out">Remote Signals
+        <ul>
+          <li class="fragment fade-in-then-semi-out">Concurrent call to multiple agents </li>
+          <li class="fragment fade-in-then-semi-out">Very similar to "call_remote" </li>
+          <li class="fragment fade-in-then-semi-out">Useful for notifications </li>
+
+        </ul>            
+      </li>
+      <li class="fragment fade-in-then-semi-out">UI Signals
+        <ul>
+          <li class="fragment fade-in-then-semi-out">Send message from the conductor to all processes that are listening </li>
+
+        </ul>            
+      </li>
+    </ul>
+  </li>
+  
+
+</section>
+
+        <section>
+          <h3>Remote Signals</h3>
+
+          <pre
+            class="fragment fade-in"
+          ><code class="rust" data-noescape><span class="fragment fade-in">use hdk::prelude::*;<!-- TODO: add recv_remote_signal if confirmed that it won't change-->
+
+<span class="fragment fade-in">#[hdk_extern]
+fn notify(agents_to_notify: Vec&lt;AgentPubkey&gt;) -> ExternResult&lt;()&gt; { 
+  <span class="fragment fade-in">let input_string = String::from("input parameter");</span>
+
+  <span class="fragment fade-in">let input = ExternIO::encode(input_string)?;</span><span class="fragment fade-in-then-out popover">Wrapping the input in an ExternIO</span><span class="fragment fade-in"> // Wrapping input </span>
+
+  <span class="fragment fade-in">remote_signal(input, agents_to_notify)?;</span><span class="fragment fade-in-then-out popover">Doesn't wait for the agents to receive the signal</span><span class="fragment fade-in"> // Doesn't wait </span>
+
+  <span class="fragment fade-in">Ok(())</span>
+}
+</span>
+
+</span></code></pre></section>  
+</section>
+
+<section>
+  <h3>UI Signals</h3>
+
+  <pre
+    class="fragment fade-in"
+  ><code class="rust" data-noescape><span class="fragment fade-in">use hdk::prelude::*;
+
+<span class="fragment fade-in">#[hdk_extern]
+fn notify_ui(_: ()) -> ExternResult&lt;()&gt; { 
+<span class="fragment fade-in">let input_string = String::from("input parameter");</span>
+
+  <span class="fragment fade-in">emit_signal(input_string)?;</span><span class="fragment fade-in-then-out popover">No other parameter other than the input because all the processes connected to the conductor will be notified</span><span class="fragment fade-in"> // Notify all processes connected to the conductor </span>
+
+  <span class="fragment fade-in">Ok(())</span>
+}
+</span>
+
+</span></code></pre></section>  
+</section>
       </div>
     </div>
 
