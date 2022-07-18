@@ -311,10 +311,9 @@ fn grant_unrestricted_capability(_: ()) -&gt; ExternResult&lt;()&gt; {
 
           <pre class="fragment fade-in"><code class="rust" data-noescape=""><span class="fragment fade-in"><span class="fragment fade-in">// Which secret do they need to know to call those functions? </span>
 fn cap_secret() -&gt; ExternResult&lt;CapSecret&gt;<span class="fragment fade-in-then-out popover">Wrapper around a byte array</span> { <span class="fragment fade-in">// Wrapper around a byte array</span>
-
-  <span class="fragment fade-in">let password = String::from("a secret password");</span><span class="fragment fade-in"> // Chosen by the app developer</span>
-  <span class="fragment fade-in">let secret_bytes = SerializedBytes::try_from(password<span class="fragment fade-in-then-out popover">Could be any type that derives "Serialize" and "Deserialize"</span>).map_err(|err| wasm_error!(err.into()))?;</span><span class="fragment fade-in"> // Could be any other type</span>
-  <span class="fragment fade-in">let secret = CapSecret::try_from(secret_bytes)<span class="fragment fade-in-then-out popover">Builds the secret from "SerializedBytes"</span>.map_err(|err| wasm_error!(err.into()))?;</span><span class="fragment fade-in"> // Building the secret from "SerializedBytes"</span>          
+  <span class="fragment fade-in">let bytes = random_bytes(64)?;</span>
+  <span class="fragment fade-in">let secret = CapSecret::try_from(bytes.into_vec())
+      .map_err(|_| wasm_error!(WasmErrorInner::Guest("Could not build secret".into())))?;</span>
 
   <span class="fragment fade-in">Ok(secret)</span>
 }</span>
