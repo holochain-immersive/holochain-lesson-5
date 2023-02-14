@@ -472,7 +472,7 @@ fn query_cap_claim_for(grantor: &AgentPubkey) -> ExternResult&lt;CapClaimEntry&g
 
 <span class="fragment fade-in">#[hdk_extern]
 fn call_zome_function_a(callee: AgentPubkey)<span class="fragment fade-in-then-out popover">We want to call "zome_function_a" in the "callee"'s cell and return its result</span> -> ExternResult&lt;ActionHash&gt; { <span class="fragment fade-in">// Call "callee"'s "zome_function_a" and return its result </span>
-  <span class="fragment fade-in">let cap_claim_entry: CapClaimEntry = query_cap_claim_for(&callee)?;</span><span class="fragment fade-in-then-out popover">Assumes that a capability claim for this agent has already been committed in the past</span><span class="fragment fade-in">Assummes the claim was committed in the past</span>
+  <span class="fragment fade-in">let cap_claim_entry: CapClaimEntry = query_cap_claim_for(&callee)?;</span><span class="fragment fade-in-then-out popover">Assumes that a capability claim for this agent has already<br />been committed in the past</span><span class="fragment fade-in"> // Assummes the claim was committed in the past</span>
 
   <span class="fragment fade-in">let zome_call_response = call_remote(
     <span class="fragment fade-in">callee,</span><span class="fragment fade-in-then-out popover">The agent we are calling, must be a participant in this network</span><span class="fragment fade-in"> // Peer in this network we are calling</span>
