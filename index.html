@@ -451,55 +451,82 @@ fn create_claim_for_zome_function_a(<span class="fragment fade-in">grant_data: (
         <!-- TODO: Example of JS UI call? -->
 
         <section>
-          <h3>Bridge call</h3>
+          <h3>Bridged call</h3>
 
-          <!-- TODO: put example when the API has been clarified -->
+          <fragment animate="by-line with-ancestry separate-comments balanced">
+            <pre>
+              <code class="rust" data-noescape>
+#[hdk_extern]
+pub fn store_file(file_bytes: SerializedBytes) -> ExternResult<EntryHash> {
+    let zome_call_response = call(
+        CallTargetCell::OtherRole<span class="fragment fade-in-then-out popover">Can be "CallTargetCell::Local" to call the caller cell</span>("file_storage_provider"), // Must be one of the roles specified in the happ manifest
+        ZomeName::from(String::from"file_storage")), // Name of the zome to call
+        FunctionName(String::from("store_file")), // Name of the zome function to call
+        None, // Capability secret, if necessary
+        file_bytes, // Input for the zome function
+    )?;
+    
+  match zome_call_response {
+    ZomeCallResponse::Ok(result<span class="fragment fade-in-then-out popover">Of type ExternIO, wrapper around byte array</span>) => { // ExternIO is a wrapper around a byte array
+      let entry_hash: EntryHash = result.decode()<span class="fragment fade-in-then-out popover">".decode()" deserializes the byte array, trying to interpret it as the requested type</span>.map_err(|err| wasm_error!(err.into()))?; // Deserialize byte array
+      Ok(entry_hash)
+    },
+    ZomeCallResponse::Unauthorized(cell_id, zome_name, function_name, callee) => {<span class="fragment fade-in-then-out popover">Callee deleted the capability grant before us tried to call id</span> // Callee deleted the capability grant
+      Err(wasm_error!(WasmErrorInner::Guest("Agent revoked the capability".into())))
+    },
+    ZomeCallResponse::NetworkError(err) => { // Network error, we could try again
+      Err(wasm_error!(WasmErrorInner::Guest(format!("There was a network error: {:?}", err)))
+    },
+    ZomeCallResponse::CountersigningSession(err) => {<span class="fragment fade-in-then-out popover">We are going to talk about countersigning entries in the future</span> <!-- TODO: what to do about this knot? -->
+      Err(wasm_error!(WasmErrorInner::Guest(format!("There was a network error: {:?}", err))))
+    },
+  }
+}
+              </code>
+            </pre>
+          </fragment>
+
         </section>
 
         <section>
           <h3>Remote call</h3>
 
+          <fragment animate="by-line with-ancestry separate-comments balanced">
           <pre
             class="fragment fade-in"
-          ><code class="rust" data-noescape><span class="fragment fade-in">use hdk::prelude::*;</span>
+          ><code class="rust" data-noescape>use hdk::prelude::*;</span>
 
-<span class="fragment fade-in">#[hdk_extern]
-fn zome_function_a(input: String)<span class="fragment fade-in-then-out popover">We want to grant a capability to execute this function</span> -> ExternResult&lt;ActionHash&gt; { <span class="fragment fade-in">/** Create, create links, get, query... */</span> } </span>
+#[hdk_extern]
+fn zome_function_a(input: String)<span class="fragment fade-in-then-out popover">We want to grant a capability to execute this function</span> -> ExternResult&lt;ActionHash&gt; { /** Create, create links, get, query... */ }
 
-<span class="fragment fade-in">#[hdk_extern]
+#[hdk_extern]
 fn query_cap_claim_for(grantor: &AgentPubkey) -> ExternResult&lt;CapClaimEntry&gt;  { /** query and find */ } <!-- TODO: can we leave a function without implementing?-->
-</span>
 
-<span class="fragment fade-in">#[hdk_extern]
-fn call_zome_function_a(callee: AgentPubkey)<span class="fragment fade-in-then-out popover">We want to call "zome_function_a" in the "callee"'s cell and return its result</span> -> ExternResult&lt;ActionHash&gt; { <span class="fragment fade-in">// Call "callee"'s "zome_function_a" and return its result </span>
-  <span class="fragment fade-in">let cap_claim_entry: CapClaimEntry = query_cap_claim_for(&callee)?;</span><span class="fragment fade-in-then-out popover">Assumes that a capability claim for this agent has already<br />been committed in the past</span><span class="fragment fade-in"> // Assummes the claim was committed in the past</span>
+#[hdk_extern]
+fn call_zome_function_a(callee: AgentPubkey)<span class="fragment fade-in-then-out popover">We want to call "zome_function_a" in the "callee"'s cell and return its result</span> -> ExternResult&lt;ActionHash&gt; { // Call "callee"'s "zome_function_a" and return its result 
+  let cap_claim_entry: CapClaimEntry = query_cap_claim_for(&callee)?;<span class="fragment fade-in-then-out popover">Assumes that a capability claim for this agent has already<br />been committed in the past</span> // Assummes the claim was committed in the past
 
-  <span class="fragment fade-in">let zome_call_response = call_remote(
-    <span class="fragment fade-in">callee,</span><span class="fragment fade-in-then-out popover">The agent we are calling, must be a participant in this network</span><span class="fragment fade-in"> // Peer in this network we are calling</span>
-    <span class="fragment fade-in">zome_name()?.name, </span><span class="fragment fade-in-then-out popover">We are calling a function defined in this zome</span><span class="fragment fade-in"> // We are calling a function defined in this zome </span>
-    <span class="fragment fade-in">FunctionName(String::from("zome_function_a")), </span><span class="fragment fade-in-then-out popover">The name of the function we are calling</span><span class="fragment fade-in"> // Function name</span>
-    <span class="fragment fade-in">cap_claim_entry.secret, </span><span class="fragment fade-in-then-out popover">The capability secret that we committed privately as the claim</span><span class="fragment fade-in"> // Cap secret</span>
-    <span class="fragment fade-in">String::from("example input")</span><span class="fragment fade-in-then-out popover">Input parameter for the function, must derive "Serialize" and "Deserialize"</span><span class="fragment fade-in"> // Input parameter</span>
-  );?</span>
+  let zome_call_response = call_remote(
+    callee,<span class="fragment fade-in-then-out popover">The agent we are calling, must be a participant in this network</span> // Peer in this network we are calling
+    zome_name()?.name,<span class="fragment fade-in-then-out popover">We are calling a function defined in this zome</span> // We are calling a function defined in this zome 
+    FunctionName(String::from("zome_function_a")),span class="fragment fade-in-then-out popover">The name of the function we are calling</span> // Function name
+    cap_claim_entry.secret,<span class="fragment fade-in-then-out popover">The capability secret that we committed privately as the claim</span> // Cap secret
+    String::from("example input")<span class="fragment fade-in-then-out popover">Input parameter for the function, must derive "Serialize" and "Deserialize"</span> // Input parameter
+  );?
 
-  <span class="fragment fade-in">match zome_call_response {
-    <span class="fragment fade-in">ZomeCallResponse::Ok(result<span class="fragment fade-in-then-out popover">Of type ExternIO, wrapper around byte array</span>) => { <span class="fragment fade-in">// ExternIO is a wrapper around a byte array</span>
-      <span class="fragment fade-in">let action_hash = result.decode()<span class="fragment fade-in-then-out popover">".decode()" deserializes the byte array, trying to interpret it as the requested type</span>.map_err(|err| wasm_error!(err.into()))?;</span><span class="fragment fade-in"> // Deserialize byte array</span>
-      <span class="fragment fade-in">Ok(action_hash)</span>
-    },</span>
-    <span class="fragment fade-in">ZomeCallResponse::Unauthorized(cell_id, zome_name, function_name, callee) => {<span class="fragment fade-in-then-out popover">Callee deleted the capability grant before us tried to call id</span><span class="fragment fade-in"> // Callee deleted the capability grant</span>
-      <span class="fragment fade-in">Err(wasm_error!(WasmErrorInner::Guest("Agent revoked the capability".into())))</span>
-    },</span>
-    <span class="fragment fade-in">ZomeCallResponse::NetworkError(err) => {<span class="fragment fade-in"> // Network error, we could try again</span>
-      <span class="fragment fade-in">Err(wasm_error!(WasmErrorInner::Guest(format!("There was a network error: {:?}", err)))</span>
-    },</span>
-    <span class="fragment fade-in">ZomeCallResponse::CountersigningSession(err) => {<span class="fragment fade-in-then-out popover">We are going to talk about countersigning entries in the future</span> <!-- TODO: what to do about this knot? -->
-      <span class="fragment fade-in">Err(wasm_error!(WasmErrorInner::Guest(format!("There was a network error: {:?}", err))))</span>
-    },</span>
-  }</span>
+
+  match zome_call_response<span class="framgent fade-in-then-out popover">Same type as the response from a bridged call</span> { // zome_call_response is the same type than in the bridged call response
+    ZomeCallResponse::Ok(result) => {
+      let action_hash: ActionHash = result.decode()?;
+      Ok(action_hash)
+    },
+    _ => Err(wasm_error!(WasmErrorInner::Guest(
+        "Failed to handle remote call".into()
+    ))),
+  }
 }
-</span></code></pre>
-        
+</code></pre>
+  </fragment>      
 </section>
 
 
@@ -581,6 +608,8 @@ fn notify_ui(_: ()) -> ExternResult&lt;()&gt; {
       import RevealHighlight from "reveal.js/plugin/highlight/highlight.esm.js";
       import RevealNotes from "reveal.js/plugin/notes/notes.esm.js";
       import RevealNestedFragments from "reveal.js-nested-fragments";
+      import RevealAnimateFragments from "reveal.js-animate-fragments";
+      import RevealEliminateEmptyLines from "reveal.js-eliminate-empty-lines";
 
       let deck = new Reveal({
         transition: "none",
@@ -588,7 +617,9 @@ fn notify_ui(_: ()) -> ExternResult&lt;()&gt; {
           Markdown,
           RevealHighlight,
           RevealNotes,
-          RevealNestedFragments,
+          RevealNestedFragments,          
+          RevealAnimateFragments,
+          RevealEliminateEmptyLines
         ],
       });
       deck.initialize();
