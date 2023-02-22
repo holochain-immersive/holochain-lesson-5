@@ -18,4 +18,4 @@ To edit the slides, open `index.html` and edit them.
 ## Relevant documentation
 
 - [Reveal.js](https://revealjs.com/)
-- [reveal.js-nested-fragments](https://www.npmjs.com/package/reveal.js-animate-fragments)
+- [reveal.js-animate-fragments](https://www.npmjs.com/package/reveal.js-animate-fragments)
