@@ -287,14 +287,14 @@
 fn zome_function_a(input: String)<span class="fragment fade-in-then-out popover">We want to grant a capability to execute this function</span> -> ExternResult&lt;ActionHash&gt; { <span class="fragment fade-in">/** Create, create links, get, query... */</span> } </span>
 
 <span class="fragment fade-in"><span class="fragment fade-in">// Which functions do we grant access to? </span>
-fn functions_to_grant_capability_for() -> BTreeSet&lt;(ZomeName, FunctionName)&gt;<span class="fragment fade-in-then-out popover">Type required by the API to specify the functions</span> { <span class="fragment fade-in">// Type required by the HDK API</span>
+fn functions_to_grant_capability_for() -> GrantedFunctions<span class="fragment fade-in-then-out popover">Type required by the API to specify the functions</span> { <span class="fragment fade-in">// Type required by the HDK API</span>
   <span class="fragment fade-in">let zome_name = zome_info()?.name; // Getting the zome name</span>
   <span class="fragment fade-in">let function_name = FunctionName<span class="fragment fade-in-then-out popover">Just a wrapper around a "String"</span>(String::from("zome_function_a");</span><span class="fragment fade-in"> // Wrapper around a "String"</span>
 
   <span class="fragment fade-in">let mut functions: BTreeSet&lt;(ZomeName, FunctionName)&gt; = BTreeSet::new();</span>
   <span class="fragment fade-in">functions.insert((zome_name, function_name));<span class="fragment fade-in-then-out popover">We want to grant access to the zome function "zome_function_a" of this zome</span></span><span class="fragment fade-in"> // Granting access to the function in this zome</span>
 
-  <span class="fragment fade-in">functions</span>
+  <span class="fragment fade-in">GrantedFunctions::Listed<span class="fragment fade-in-then-out popover">Can be "Listed" specific zome functions or "All" zome functions </span>(functions)</span> <span class="fragment fade-in">// Can be "Listed" functions or "All" functions</span>
 }</span>
 
 <span class="fragment fade-in">#[hdk_extern]
@@ -494,7 +494,7 @@ pub fn store_file(file_bytes: SerializedBytes) -> ExternResult<EntryHash> {
           <fragment animate="by-line with-ancestry separate-comments balanced">
           <pre
             class="fragment fade-in"
-          ><code class="rust" data-noescape>use hdk::prelude::*;</span>
+          ><code class="rust" data-noescape>use hdk::prelude::*;
 
 #[hdk_extern]
 fn zome_function_a(input: String)<span class="fragment fade-in-then-out popover">We want to grant a capability to execute this function</span> -> ExternResult&lt;ActionHash&gt; { /** Create, create links, get, query... */ }
@@ -509,13 +509,13 @@ fn call_zome_function_a(callee: AgentPubkey)<span class="fragment fade-in-then-o
   let zome_call_response = call_remote(
     callee,<span class="fragment fade-in-then-out popover">The agent we are calling, must be a participant in this network</span> // Peer in this network we are calling
     zome_name()?.name,<span class="fragment fade-in-then-out popover">We are calling a function defined in this zome</span> // We are calling a function defined in this zome 
-    FunctionName(String::from("zome_function_a")),span class="fragment fade-in-then-out popover">The name of the function we are calling</span> // Function name
+    FunctionName(String::from("zome_function_a")),<span class="fragment fade-in-then-out popover">The name of the function we are calling</span> // Function name
     cap_claim_entry.secret,<span class="fragment fade-in-then-out popover">The capability secret that we committed privately as the claim</span> // Cap secret
     String::from("example input")<span class="fragment fade-in-then-out popover">Input parameter for the function, must derive "Serialize" and "Deserialize"</span> // Input parameter
   );?
 
 
-  match zome_call_response<span class="framgent fade-in-then-out popover">Same type as the response from a bridged call</span> { // zome_call_response is the same type than in the bridged call response
+  match zome_call_response<span class="fragment fade-in-then-out popover">Same type as the response from a bridged call</span> { // zome_call_response is the same type than in the bridged call response
     ZomeCallResponse::Ok(result) => {
       let action_hash: ActionHash = result.decode()?;
       Ok(action_hash)
