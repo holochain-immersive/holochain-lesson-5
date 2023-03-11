@@ -476,11 +476,8 @@ pub fn store_file(file_bytes: SerializedBytes) -> ExternResult<EntryHash> {
     ZomeCallResponse::Unauthorized(cell_id, zome_name, function_name, callee) => {<span class="fragment fade-in-then-out popover">Callee deleted the capability grant before us tried to call id</span> // Callee deleted the capability grant
       Err(wasm_error!(WasmErrorInner::Guest("Agent revoked the capability".into())))
     },
-    ZomeCallResponse::NetworkError(err) => { // Network error, we could try again
-      Err(wasm_error!(WasmErrorInner::Guest(format!("There was a network error: {:?}", err)))
-    },
-    ZomeCallResponse::CountersigningSession(err) => {<span class="fragment fade-in-then-out popover">We are going to talk about countersigning entries in the future</span> <!-- TODO: what to do about this knot? -->
-      Err(wasm_error!(WasmErrorInner::Guest(format!("There was a network error: {:?}", err))))
+    _ => {
+      Err(wasm_error!(WasmErrorInner::Guest(format!("There was an error by call: {:?}", zome_call_resposne)))
     },
   }
 }
@@ -521,6 +518,9 @@ fn call_zome_function_a(callee: AgentPubkey)<span class="fragment fade-in-then-o
     ZomeCallResponse::Ok(result) => {
       let action_hash: ActionHash = result.decode()?;
       Ok(action_hash)
+    },
+    ZomeCallResponse::NetworkError(err) => {
+      Err(wasm_error!(WasmErrorInner::Guest(format!("There was a network error: {:?}", err))))
     },
     _ => Err(wasm_error!(WasmErrorInner::Guest(
         "Failed to handle remote call".into()
