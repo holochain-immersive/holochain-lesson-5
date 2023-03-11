@@ -210,7 +210,7 @@
                     Stored by the grantee of the capability
                   </li>
                   <li class="fragment fade-in-then-semi-out">
-                    Don't allow access to external zome call requests
+                    These don't provide access to external zome call requests
                   </li>
                   <li class="fragment fade-in-then-semi-out">
                     Mostly a convenience entry type just to store information
@@ -218,10 +218,10 @@
                   </li>
                 </ul>
               </li>
+              <li class="fragment fade-in-then-semi-out">
+                Both can be created as any other entry, at any point in time
+              </li>
             </ul>
-          </li>
-          <li class="fragment fade-in-then-semi-out">
-            Both can be created as any other entry, at any point in time
           </li>
         </section>
 
@@ -269,8 +269,8 @@
                 its signature and also a capability secret
               </li>
               <li class="fragment fade-in-then-semi-out">
-                Only the calls that carry the secret specified and are made by
-                one of the agents specified in the capability token can make the
+                Only the calls that a) carry the secret specified and b) are made by
+                one of the agents specified in the capability token are allowed to make the
                 call
               </li>
             </ul>
@@ -400,7 +400,7 @@ fn grant_assigned_capability(authorized_agent: AgentPubkey) -> ExternResult&lt;(
           ><code class="rust" data-noescape><span class="fragment fade-in">use hdk::prelude::*;
 
 <span class="fragment fade-in">#[hdk_extern]
-fn create_claim_for_zome_function_a(<span class="fragment fade-in">grant_data: (AgentPubkey, Secret)</span><span class="fragment fade-in-then-out popover">Result of another process, maybe a bluetooth handshake</span>) -> ExternResult&lt;()&gt; {
+fn create_claim_for_zome_function_a(<span class="fragment fade-in">grant_data: (AgentPubkey, Secret)</span><span class="fragment fade-in-then-out popover">Provided by another process, maybe a bluetooth handshake</span>) -> ExternResult&lt;()&gt; {
   
   <span class="fragment fade-in">let cap_claim = CapClaimEntry<span class="fragment fade-in-then-out popover">Private entry built-in to Holochain and the HDK</span> { <span class="fragment fade-in">// Built-in private entry</span>
     <span class="fragment fade-in">grantor: grant_data.0,</span><span class="fragment fade-in-then-out popover">Just to remember which agent to call</span><span class="fragment fade-in"> // Just to remember which agent to call</span>
@@ -460,13 +460,13 @@ fn create_claim_for_zome_function_a(<span class="fragment fade-in">grant_data: (
               <code class="rust" data-noescape>
 #[hdk_extern]
 pub fn store_file(file_bytes: SerializedBytes) -> ExternResult<EntryHash> {
-    let zome_call_response = call(
-        CallTargetCell::OtherRole<span class="fragment fade-in-then-out popover">Can be "CallTargetCell::Local" to call the caller cell</span>("file_storage_provider"), // Must be one of the roles specified in the happ manifest
-        ZomeName::from(String::from"file_storage")), // Name of the zome to call
-        FunctionName(String::from("store_file")), // Name of the zome function to call
-        None, // Capability secret, if necessary
-        file_bytes, // Input for the zome function
-    )?;
+  let zome_call_response = call(
+    CallTargetCell::OtherRole<span class="fragment fade-in-then-out popover">Can be "CallTargetCell::Local" to call the caller cell</span>("file_storage_provider"), // Must be one of the roles specified in the happ manifest
+    ZomeName::from(String::from"file_storage")), // Name of the zome to call
+    FunctionName(String::from("store_file")), // Name of the zome function to call
+    None, // Capability secret, if necessary
+    file_bytes, // Input for the zome function
+  )?;
     
   match zome_call_response {
     ZomeCallResponse::Ok(result<span class="fragment fade-in-then-out popover">Of type ExternIO, wrapper around byte array</span>) => { // ExternIO is a wrapper around a byte array
@@ -601,6 +601,9 @@ fn notify_ui(_: ()) -> ExternResult&lt;()&gt; {
 
 </span></code></pre></section>  
 </section>
+        <section>
+          <h1>That's it!</h1>
+        </section>
       </div>
     </div>
 
