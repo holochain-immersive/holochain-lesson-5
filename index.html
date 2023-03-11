@@ -590,7 +590,7 @@ fn notify(agents_to_notify: Vec&lt;AgentPubkey&gt;) -> ExternResult&lt;()&gt; {
 
 <span class="fragment fade-in">#[hdk_extern]
 fn notify_ui(_: ()) -> ExternResult&lt;()&gt; { 
-<span class="fragment fade-in">let input_string = String::from("input parameter");</span>
+  <span class="fragment fade-in">let input_string = String::from("input parameter");</span>
 
   <span class="fragment fade-in">emit_signal(input_string)?;</span><span class="fragment fade-in-then-out popover">No other parameter other than the input because all the processes connected to the conductor will be notified</span><span class="fragment fade-in"> // Notify all processes connected to the conductor </span>
 
