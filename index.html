@@ -481,7 +481,7 @@ fn query_cap_claim_for(grantor: &amp;AgentPubkey) -&gt; ExternResult&lt;CapClaim
 
 #[hdk_extern]
 fn call_zome_function_a(callee: AgentPubkey)<span class="fragment fade-in-then-out popover">We want to call "zome_function_a" in the "callee"'s cell and return its result</span> -&gt; ExternResult&lt;ActionHash&gt; { // Call "callee"'s "zome_function_a" and return its result 
-  let cap_claim_entry: CapClaimEntry = query_cap_claim_for(&amp;callee)?;<span class="fragment fade-in-then-out popover">Assumes that a capability claim for this agent has already<br>been committed in the past</span> // Assummes the claim was committed in the past
+  let cap_claim_entry: CapClaimEntry = query_cap_claim_for(&amp;callee)?;<span class="fragment fade-in-then-out popover">Assumes that a capability claim for this agent has already<br>been committed in the past</span> // Assumes the claim was committed in the past
 
   let zome_call_response = call_remote(
     callee,<span class="fragment fade-in-then-out popover">The agent we are calling, must be a participant in this network</span> // Peer in this network we are calling
@@ -489,8 +489,7 @@ fn call_zome_function_a(callee: AgentPubkey)<span class="fragment fade-in-then-o
     FunctionName(String::from("zome_function_a")),<span class="fragment fade-in-then-out popover">The name of the function we are calling</span> // Function name
     cap_claim_entry.secret,<span class="fragment fade-in-then-out popover">The capability secret that we committed privately as the claim</span> // Cap secret
     String::from("example input")<span class="fragment fade-in-then-out popover">Input parameter for the function, must derive "Serialize" and "Deserialize"</span> // Input parameter
-  );?
-
+  )?;
 
   match zome_call_response<span class="fragment fade-in-then-out popover">Same type as the response from a bridged call</span> { // zome_call_response is the same type than in the bridged call response
     ZomeCallResponse::Ok(result) =&gt; {
