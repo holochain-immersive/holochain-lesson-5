@@ -336,7 +336,7 @@ fn cap_secret() -> ExternResult&lt;CapSecret&gt;<span class="fragment fade-in-th
 }</span>
 
 <span class="fragment fade-in">#[hdk_extern]
-fn grant_transferable_capability(authorized_agent: AgentPubkey) -> ExternResult&lt;()&gt; {
+fn grant_transferable_capability(_: ()) -> ExternResult&lt;CapSecret&gt; {
   <span class="fragment fade-in">let secret = cap_secret()?;</span>
 
   <span class="fragment fade-in">let access = CapAccess::Transferable {<span class="fragment fade-in-then-out popover">Only requests that carry this secret will be able to execute "zome_function_a"</span><span class="fragment fade-in"> // Requests are required to carry this secret</span> 
@@ -350,7 +350,7 @@ fn grant_transferable_capability(authorized_agent: AgentPubkey) -> ExternResult&
 
   <span class="fragment fade-in">create_cap_grant(capability_grant)?;</span>
 
-  <span class="fragment fade-in">Ok(())</span>
+  <span class="fragment fade-in">Ok(secret)</span>
 }
 </span>
               
