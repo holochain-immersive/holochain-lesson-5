@@ -356,7 +356,7 @@ fn grant_assigned_capability(authorized_agent: AgentPubkey) -&gt; ExternResult&l
   <span class="fragment fade-in">assignees.insert(authorized_agent);<span class="fragment fade-in-then-out popover">Assigning the authorized_agent</span></span><span class="fragment fade-in"> // Assign capabilty to the given "authorized_agent"</span>
 
   <span class="fragment fade-in">let access = CapAccess::Assigned {<span class="fragment fade-in-then-out popover">Only requests that <strong>both</strong> carry this secret and are signed by any of the assignees will be able to execute "zome_function_a"</span><span class="fragment fade-in"> // Requests are required to carry this secret and be signed by one of the assignees</span> 
-    secret: cap_secret(),
+    secret: cap_secret()?,
     assignees
   };</span>
   <span class="fragment fade-in">let capability_grant = CapGrantEntry {
