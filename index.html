@@ -283,7 +283,7 @@ fn functions_to_grant_capability_for() -&gt; ExternResult&lt;GrantedFunctions&gt
   <span class="fragment fade-in">let mut functions: BTreeSet&lt;(ZomeName, FunctionName)&gt; = BTreeSet::new();</span>
   <span class="fragment fade-in">functions.insert((zome_name, function_name));<span class="fragment fade-in-then-out popover">We want to grant access to the zome function "zome_function_a" of this zome</span></span><span class="fragment fade-in"> // Granting access to the function in this zome</span>
 
-  <span class="fragment fade-in">GrantedFunctions::Listed<span class="fragment fade-in-then-out popover">Can be "Listed" specific zome functions or "All" zome functions </span>(functions)</span> <span class="fragment fade-in">// Can be "Listed" functions or "All" functions</span>
+  <span class="fragment fade-in">Ok(GrantedFunctions::Listed<span class="fragment fade-in-then-out popover">Can be "Listed" specific zome functions or "All" zome functions </span>(functions))</span> <span class="fragment fade-in">// Can be "Listed" functions or "All" functions</span>
 }</span>
 
 <span class="fragment fade-in">#[hdk_extern]
@@ -543,6 +543,34 @@ fn call_zome_function_a(callee: AgentPubkey)<span class="fragment fade-in-then-o
   </fragment>      
 </section>
 
+<section>
+  <fragment language="markdown" animate="by-line with-ancestry">
+    ## call_info()
+
+    - HDK function
+    - Returns information about the source of the zome call that's being executed
+  </fragment>
+
+
+  <fragment animate="by-line with-ancestry separate-comments balanced">
+    <pre>      <code class="rust" data-noescape="">use hdk::prelude::*;
+
+#[hdk_extern]
+fn request_retrieve_private_entries<span class="fragment popover fade-in-then-out">This function can be called via call_remote</span>_(: ()) -&gt; ExternResult&lt;Record&gt; {
+  let info = call_info()?;
+
+  let caller: AgentPubKey = info.provenance;
+  match call_info.cap_grant {
+    ChainAuthor(my_pub_key) =&gt; {}, // The cell's agent called this function
+    RemoteAgent(zome_call_cap_grant) =&gt; {}  // An external agent called this function via call or call_remote, 
+                                            // and it was authorized because this "zome_call_cap_grant" exists in the source chain for this cell
+  }
+
+  // ... execute the rest of the code
+}
+</code></pre>
+  </fragment>
+</section>
 
 <section>
   <h3>Signals</h3>
