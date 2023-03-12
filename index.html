@@ -397,6 +397,38 @@ fn create_claim_for_zome_function_a(<span class="fragment fade-in">grant_data: (
         </section>
 
         <section>
+          <h3>Capability Tokens (VII)</h3>
+          <h4>Query the created capability claim</h4>
+
+          <fragment animate="by-line with-ancestry separate-comments balanced">
+            <pre>              <code class="rust" data-noescape="">use hdk::prelude::*;
+
+// Imagine we have already stored some CapClaims
+// and we want to retrieve all stored CapClaims from a certain grantor
+fn query_cap_claims_for(grantor: &amp;AgentPubkey) -&gt; ExternResult&lt;Vec&lt;CapClaim&gt;&gt; {
+  let claims_records = query(
+    ChainQueryFilter::new()
+      .entry_type(EntryType::CapClaim) // Only query Capability Claim related records
+      .include_entries(true),          // Include the Capability Claim entries in the records
+  )?;
+
+  let claims_from_grantor: Vec&lt;CapClaim&gt; = claims_records
+    .into_iter()
+    .filter_map(|record| record.entry().as_option().cloned()) // Extract the entry from the record
+    .filter_map(|entry| match entry {
+      Entry::CapClaim(claim) =&gt; Some(claim.clone()),
+      _ =&gt; None,
+    })
+    .filter(|claim| claim.grantor.eq(&amp;grantor)) // Only select the claims with the given grantor 
+    .collect();
+
+  Ok(claims_from_grantor)
+}                
+</code></pre>
+          </fragment>
+        </section>
+
+        <section>
           <h3>3 Sources of Zome Calls</h3>
 
           <li class="fragment fade-in-then-semi-out">
@@ -476,12 +508,15 @@ pub fn store_file(file_bytes: SerializedBytes) -&gt; ExternResult<entryhash> {
 #[hdk_extern]
 fn zome_function_a(input: String)<span class="fragment fade-in-then-out popover">We want to grant a capability to execute this function</span> -&gt; ExternResult&lt;ActionHash&gt; { /** Create, create links, get, query... */ }
 
-#[hdk_extern]
-fn query_cap_claim_for(grantor: &amp;AgentPubkey) -&gt; ExternResult&lt;CapClaimEntry&gt;  { /** query and find */ } <!-- TODO: can we leave a function without implementing?-->
+fn query_cap_claims_for(grantor: &amp;AgentPubkey) -&gt; ExternResult&lt;Vec&lt;CapClaim&gt;&gt; {
+  // Defined in the "Capability Tokens (VII) slide"
+}
 
+// Call "callee"'s "zome_function_a" and return its result 
 #[hdk_extern]
-fn call_zome_function_a(callee: AgentPubkey)<span class="fragment fade-in-then-out popover">We want to call "zome_function_a" in the "callee"'s cell and return its result</span> -&gt; ExternResult&lt;ActionHash&gt; { // Call "callee"'s "zome_function_a" and return its result 
-  let cap_claim_entry: CapClaimEntry = query_cap_claim_for(&amp;callee)?;<span class="fragment fade-in-then-out popover">Assumes that a capability claim for this agent has already<br>been committed in the past</span> // Assumes the claim was committed in the past
+fn call_zome_function_a(callee: AgentPubkey)<span class="fragment fade-in-then-out popover">We want to call "zome_function_a" in the "callee"'s cell and return its result</span> -&gt; ExternResult&lt;ActionHash&gt; { 
+  let cap_claim_entry: CapClaimEntry = query_cap_claims_for(&amp;callee)?
+    .ok_or(wasm_error!(WasmErrorInner::Guest(String::from("There are no CapClaims for this grantor"))))?;
 
   let zome_call_response = call_remote(
     callee,<span class="fragment fade-in-then-out popover">The agent we are calling, must be a participant in this network</span> // Peer in this network we are calling
