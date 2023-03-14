@@ -286,7 +286,7 @@
           ><code class="rust" data-noescape><span class="fragment fade-in-then-semi-out">use hdk::prelude::*;
 
 <span class="fragment fade-in">#[hdk_extern]
-fn zome_function_a(input: String)<span class="fragment fade-in-then-out popover">We want to grant a capability to execute this function</span> -> ExternResult&lt;ActionHash&gt; { <span class="fragment fade-in">/** Create, create links, get, query... */</span> } </span>
+fn zome_function_a(input: String)<span class="fragment fade-in-then-out popover">We want to grant a capability to execute this function</span> -> ExternResult&lt;ActionHash&gt; { <span class="fragment fade-in">/* Create, create links, get, query... */</span> } </span>
 
 <span class="fragment fade-in"><span class="fragment fade-in">// Which functions do we grant access to? </span>
 fn functions_to_grant_capability_for() -> ExternResult&lt;GrantedFunctions&gt;<span class="fragment fade-in-then-out popover">Type required by the API to specify the functions</span> { <span class="fragment fade-in">// Type required by the HDK API</span>
@@ -339,7 +339,7 @@ fn cap_secret() -> ExternResult&lt;CapSecret&gt;<span class="fragment fade-in-th
 fn grant_transferable_capability(_: ()) -> ExternResult&lt;CapSecret&gt; {
   <span class="fragment fade-in">let secret = cap_secret()?;</span>
 
-  <span class="fragment fade-in">let access = CapAccess::Transferable {<span class="fragment fade-in-then-out popover">Only requests that carry this secret will be able to execute "zome_function_a"</span><span class="fragment fade-in"> // Requests are required to carry this secret</span> 
+  <span class="fragment fade-in">let access = CapAccess::Transferable {<span class="fragment fade-in-then-out popover">Only requests that carry this secret will be able to execute "zome_function_a"</span><span class="fragment fade-in"> // Requests are required to carry this secret</span>
     secret,
   };</span>
   <span class="fragment fade-in">let capability_grant = CapGrantEntry {
@@ -353,7 +353,7 @@ fn grant_transferable_capability(_: ()) -> ExternResult&lt;CapSecret&gt; {
   <span class="fragment fade-in">Ok(secret)</span>
 }
 </span>
-              
+
 </code></pre>
         </section>
 
@@ -366,13 +366,13 @@ fn grant_transferable_capability(_: ()) -> ExternResult&lt;CapSecret&gt; {
           ><code class="rust" data-noescape><span class="fragment fade-in">use hdk::prelude::*;
 
 <span class="fragment fade-in">#[hdk_extern]
-fn grant_assigned_capability(authorized_agent: AgentPubkey) -> ExternResult&lt;()&gt; {
+fn grant_assigned_capability(authorized_agent: AgentPubKey) -> ExternResult&lt;()&gt; {
 
-  <span class="fragment fade-in">/** To whom do we grant access to those functions? */</span>
-  <span class="fragment fade-in">let mut assignees: BTreeSet&lt;AgentPubkey&gt;<span class="fragment fade-in-then-out popover">Type required by the API to specify the granted agents</span> = BTreeSet::new();</span>
+  <span class="fragment fade-in">/* To whom do we grant access to those functions? */</span>
+  <span class="fragment fade-in">let mut assignees: BTreeSet&lt;AgentPubKey&gt;<span class="fragment fade-in-then-out popover">Type required by the API to specify the granted agents</span> = BTreeSet::new();</span>
   <span class="fragment fade-in">assignees.insert(authorized_agent);<span class="fragment fade-in-then-out popover">Assigning the authorized_agent</span></span><span class="fragment fade-in"> // Assign capabilty to the given "authorized_agent"</span>
 
-  <span class="fragment fade-in">let access = CapAccess::Assigned {<span class="fragment fade-in-then-out popover">Only requests that <strong>both</strong> carry this secret and are signed by any of the assignees will be able to execute "zome_function_a"</span><span class="fragment fade-in"> // Requests are required to carry this secret and be signed by one of the assignees</span> 
+  <span class="fragment fade-in">let access = CapAccess::Assigned {<span class="fragment fade-in-then-out popover">Only requests that <strong>both</strong> carry this secret and are signed by any of the assignees will be able to execute "zome_function_a"</span><span class="fragment fade-in"> // Requests are required to carry this secret and be signed by one of the assignees</span>
     secret: cap_secret()?,
     assignees
   };</span>
@@ -400,8 +400,8 @@ fn grant_assigned_capability(authorized_agent: AgentPubkey) -> ExternResult&lt;(
           ><code class="rust" data-noescape><span class="fragment fade-in">use hdk::prelude::*;
 
 <span class="fragment fade-in">#[hdk_extern]
-fn create_claim_for_zome_function_a(<span class="fragment fade-in">grant_data: (AgentPubkey, Secret)</span><span class="fragment fade-in-then-out popover">Provided by another process, maybe a bluetooth handshake</span>) -> ExternResult&lt;()&gt; {
-  
+fn create_claim_for_zome_function_a(<span class="fragment fade-in">grant_data: (AgentPubKey, Secret)</span><span class="fragment fade-in-then-out popover">Provided by another process, maybe a bluetooth handshake</span>) -> ExternResult&lt;()&gt; {
+
   <span class="fragment fade-in">let cap_claim = CapClaimEntry<span class="fragment fade-in-then-out popover">Private entry built-in to Holochain and the HDK</span> { <span class="fragment fade-in">// Built-in private entry</span>
     <span class="fragment fade-in">grantor: grant_data.0,</span><span class="fragment fade-in-then-out popover">Just to remember which agent to call</span><span class="fragment fade-in"> // Just to remember which agent to call</span>
     <span class="fragment fade-in">secret: grant_data.1,</span><span class="fragment fade-in-then-out popover">Store the secret to be able to add it to the request</span><span class="fragment fade-in"> // Store the secret</span>
@@ -425,7 +425,7 @@ fn create_claim_for_zome_function_a(<span class="fragment fade-in">grant_data: (
 
 // Imagine we have already stored some CapClaims
 // and we want to retrieve all stored CapClaims from a certain grantor
-fn query_cap_claims_for(grantor: &AgentPubkey) -> ExternResult&lt;Vec&lt;CapClaim&gt;&gt; {
+fn query_cap_claims_for(grantor: &AgentPubKey) -> ExternResult&lt;Vec&lt;CapClaim&gt;&gt; {
   let claims_records = query(
     ChainQueryFilter::new()
       .entry_type(EntryType::CapClaim) // Only query Capability Claim related records
@@ -439,11 +439,11 @@ fn query_cap_claims_for(grantor: &AgentPubkey) -> ExternResult&lt;Vec&lt;CapClai
       Entry::CapClaim(claim) => Some(claim.clone()),
       _ => None,
     })
-    .filter(|claim| claim.grantor.eq(&grantor)) // Only select the claims with the given grantor 
+    .filter(|claim| claim.grantor.eq(&grantor)) // Only select the claims with the given grantor
     .collect();
 
   Ok(claims_from_grantor)
-}                
+}
 </code></pre>
           </fragment>
         </section>
@@ -492,15 +492,15 @@ fn query_cap_claims_for(grantor: &AgentPubkey) -> ExternResult&lt;Vec&lt;CapClai
             <pre>
               <code class="rust" data-noescape>
 #[hdk_extern]
-pub fn store_file(file_bytes: SerializedBytes) -> ExternResult<EntryHash> {
+pub fn store_file(file_bytes: SerializedBytes) -> ExternResult&ltEntryHash&gt {
   let zome_call_response = call(
     CallTargetCell::OtherRole<span class="fragment fade-in-then-out popover">Can be "CallTargetCell::Local" to call the caller cell</span>("file_storage_provider"), // Must be one of the roles specified in the happ manifest
-    ZomeName::from(String::from"file_storage")), // Name of the zome to call
+    ZomeName::from(String::from("file_storage")), // Name of the zome to call
     FunctionName(String::from("store_file")), // Name of the zome function to call
     None, // Capability secret, if necessary
     file_bytes, // Input for the zome function
   )?;
-    
+
   match zome_call_response {
     ZomeCallResponse::Ok(result<span class="fragment fade-in-then-out popover">Of type ExternIO, wrapper around byte array</span>) => { // ExternIO is a wrapper around a byte array
       let entry_hash: EntryHash = result.decode()<span class="fragment fade-in-then-out popover">".decode()" deserializes the byte array, trying to interpret it as the requested type</span>.map_err(|err| wasm_error!(err.into()))?; // Deserialize byte array
@@ -510,7 +510,7 @@ pub fn store_file(file_bytes: SerializedBytes) -> ExternResult<EntryHash> {
       Err(wasm_error!(WasmErrorInner::Guest("Agent revoked the capability".into())))
     },
     _ => {
-      Err(wasm_error!(WasmErrorInner::Guest(format!("There was an error by call: {:?}", zome_call_resposne)))
+      Err(wasm_error!(WasmErrorInner::Guest(format!("There was an error by call: {:?}", zome_call_response))))
     },
   }
 }
@@ -529,21 +529,21 @@ pub fn store_file(file_bytes: SerializedBytes) -> ExternResult<EntryHash> {
           ><code class="rust" data-noescape>use hdk::prelude::*;
 
 #[hdk_extern]
-fn zome_function_a(input: String)<span class="fragment fade-in-then-out popover">We want to grant a capability to execute this function</span> -> ExternResult&lt;ActionHash&gt; { /** Create, create links, get, query... */ }
+fn zome_function_a(input: String)<span class="fragment fade-in-then-out popover">We want to grant a capability to execute this function</span> -> ExternResult&lt;ActionHash&gt; { /* Create, create links, get, query... */ }
 
-fn query_cap_claims_for(grantor: &AgentPubkey) -> ExternResult&lt;Vec&lt;CapClaim&gt;&gt; {
+fn query_cap_claims_for(grantor: &AgentPubKey) -> ExternResult&lt;Vec&lt;CapClaim&gt;&gt; {
   // Defined in the "Capability Tokens (VII) slide"
 }
 
-// Call "callee"'s "zome_function_a" and return its result 
+// Call "callee"'s "zome_function_a" and return its result
 #[hdk_extern]
-fn call_zome_function_a(callee: AgentPubkey)<span class="fragment fade-in-then-out popover">We want to call "zome_function_a" in the "callee"'s cell and return its result</span> -> ExternResult&lt;ActionHash&gt; { 
+fn call_zome_function_a(callee: AgentPubKey)<span class="fragment fade-in-then-out popover">We want to call "zome_function_a" in the "callee"'s cell and return its result</span> -> ExternResult&lt;ActionHash&gt; {
   let cap_claim_entry: CapClaimEntry = query_cap_claims_for(&callee)?
     .ok_or(wasm_error!(WasmErrorInner::Guest(String::from("There are no CapClaims for this grantor"))))?;
 
   let zome_call_response = call_remote(
     callee,<span class="fragment fade-in-then-out popover">The agent we are calling, must be a participant in this network</span> // Peer in this network we are calling
-    zome_name()?.name,<span class="fragment fade-in-then-out popover">We are calling a function defined in this zome</span> // We are calling a function defined in this zome 
+    zome_name()?.name,<span class="fragment fade-in-then-out popover">We are calling a function defined in this zome</span> // We are calling a function defined in this zome
     FunctionName(String::from("zome_function_a")),<span class="fragment fade-in-then-out popover">The name of the function we are calling</span> // Function name
     cap_claim_entry.secret,<span class="fragment fade-in-then-out popover">The capability secret that we committed privately as the claim</span> // Cap secret
     String::from("example input")<span class="fragment fade-in-then-out popover">Input parameter for the function, must derive "Serialize" and "Deserialize"</span> // Input parameter
@@ -563,7 +563,7 @@ fn call_zome_function_a(callee: AgentPubkey)<span class="fragment fade-in-then-o
   }
 }
 </code></pre>
-  </fragment>      
+  </fragment>
 </section>
 
 <section>
@@ -602,7 +602,7 @@ fn request_retrieve_private_entries<span class="fragment popover fade-in-then-ou
   <li class="fragment fade-in-then-semi-out">Don't wait for a response: fire and forget </li>
   <li class="fragment fade-in-then-semi-out">Not reliable: signals can be lost without our code knowing </li>
   <li class="fragment fade-in-then-semi-out">2 types:
-  
+
     <ul>
       <li class="fragment fade-in-then-semi-out">Remote Signals
         <ul>
@@ -610,17 +610,17 @@ fn request_retrieve_private_entries<span class="fragment popover fade-in-then-ou
           <li class="fragment fade-in-then-semi-out">Very similar to "call_remote" </li>
           <li class="fragment fade-in-then-semi-out">Useful for notifications </li>
 
-        </ul>            
+        </ul>
       </li>
       <li class="fragment fade-in-then-semi-out">UI Signals
         <ul>
           <li class="fragment fade-in-then-semi-out">Send message from the conductor to all processes that are listening </li>
 
-        </ul>            
+        </ul>
       </li>
     </ul>
   </li>
-  
+
 
 </section>
 
@@ -632,7 +632,7 @@ fn request_retrieve_private_entries<span class="fragment popover fade-in-then-ou
           ><code class="rust" data-noescape><span class="fragment fade-in">use hdk::prelude::*;<!-- TODO: add recv_remote_signal if confirmed that it won't change-->
 
 <span class="fragment fade-in">#[hdk_extern]
-fn notify(agents_to_notify: Vec&lt;AgentPubkey&gt;) -> ExternResult&lt;()&gt; { 
+fn notify(agents_to_notify: Vec&lt;AgentPubKey&gt;) -> ExternResult&lt;()&gt; {
   <span class="fragment fade-in">let input_string = String::from("input parameter");</span>
 
   <span class="fragment fade-in">let input = ExternIO::encode(input_string)?;</span><span class="fragment fade-in-then-out popover">Wrapping the input in an ExternIO</span><span class="fragment fade-in"> // Wrapping input </span>
@@ -643,7 +643,7 @@ fn notify(agents_to_notify: Vec&lt;AgentPubkey&gt;) -> ExternResult&lt;()&gt; {
 }
 </span>
 
-</span></code></pre></section>  
+</span></code></pre></section>
 </section>
 
 <section>
@@ -654,7 +654,7 @@ fn notify(agents_to_notify: Vec&lt;AgentPubkey&gt;) -> ExternResult&lt;()&gt; {
   ><code class="rust" data-noescape><span class="fragment fade-in">use hdk::prelude::*;
 
 <span class="fragment fade-in">#[hdk_extern]
-fn notify_ui(_: ()) -> ExternResult&lt;()&gt; { 
+fn notify_ui(_: ()) -> ExternResult&lt;()&gt; {
   <span class="fragment fade-in">let input_string = String::from("input parameter");</span>
 
   <span class="fragment fade-in">emit_signal(input_string)?;</span><span class="fragment fade-in-then-out popover">No other parameter other than the input because all the processes connected to the conductor will be notified</span><span class="fragment fade-in"> // Notify all processes connected to the conductor </span>
@@ -663,7 +663,7 @@ fn notify_ui(_: ()) -> ExternResult&lt;()&gt; {
 }
 </span>
 
-</span></code></pre></section>  
+</span></code></pre></section>
 </section>
         <section>
           <h1>That's it!</h1>
@@ -686,7 +686,7 @@ fn notify_ui(_: ()) -> ExternResult&lt;()&gt; {
           Markdown,
           RevealHighlight,
           RevealNotes,
-          RevealNestedFragments,          
+          RevealNestedFragments,
           RevealAnimateFragments,
           RevealEliminateEmptyLines
         ],
