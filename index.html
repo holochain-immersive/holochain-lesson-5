@@ -611,9 +611,7 @@ fn request_retrieve_private_entries<span class="fragment popover fade-in-then-ou
 fn notify(agents_to_notify: Vec&lt;AgentPubKey&gt;) -&gt; ExternResult&lt;()&gt; {
   <span class="fragment fade-in">let input_string = String::from("input parameter");</span>
 
-  <span class="fragment fade-in">let input = ExternIO::encode(input_string).map_err(|err| wasm_error!(err))?;</span><span class="fragment fade-in-then-out popover">Wrapping the input in an ExternIO</span><span class="fragment fade-in"> // Wrapping input </span>
-
-  <span class="fragment fade-in">remote_signal(input, agents_to_notify)?;</span><span class="fragment fade-in-then-out popover">Doesn't wait for the agents to receive the signal</span><span class="fragment fade-in"> // Doesn't wait </span>
+  <span class="fragment fade-in">remote_signal(input_string, agents_to_notify)?;</span><span class="fragment fade-in-then-out popover">Doesn't wait for the agents to receive the signal</span><span class="fragment fade-in"> // Doesn't wait </span>
 
   <span class="fragment fade-in">Ok(())</span>
 }
