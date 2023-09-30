@@ -1,411 +1,269 @@
-<!DOCTYPE html><html lang="en"><head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="Description" content="Put your description here.">
-    <base href="/">
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="Description" content="Put your description here." />
+    <base href="/" />
+
+    
+    <title>Holochain Lesson 5</title>
 
     <style>
-      html,
-      body {
-        margin: 0;
-        padding: 0;
-        font-family: sans-serif;
-        background-color: #ededed;
-        --r-main-font-size: 24px;
-        --r-heading-margin: 20px 0 12px 0;
-      }
-
       .slides {
-        width: 75% !important;
-      }
-
-      .container {
-        top: 0 !important;
-        display: flex !important;
-        flex-direction: row !important;
-      }
-      .column {
-        display: flex;
-        flex-direction: column;
-      }
-      .row {
-        display: flex;
-        flex-direction: row;
-      }
-
-      ul {
-        width: 100%;
-      }
-
-      section {
-        text-align: left;
-      }
-
-      .popover {
-        position: absolute;
-        background-color: #4d4d4d;
-        padding: 1rem 2rem;
-        box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
-        border-radius: 10px;
-        width: auto;
-        transform: translate(16px, -15px);
-        max-width: 600px;
-        white-space: break-spaces;
-      }
-      .popover:after {
-        content: "";
-        position: absolute;
-        top: 6px;
-        left: -8px;
-        border-style: solid;
-        border-width: 18px 12px 0;
-        border-color: #4d4d4d transparent;
-        display: block;
-        width: 0;
-        z-index: 1;
-        transform: translate(-50%, 50%) rotate(90deg);
-      }
-
-      .popover .hljs-meta,
-      .popover .hljs-class,
-      .popover .hljs-symbol,
-      .popover .hljs-keyword,
-      .popover .hljs-string,
-      .popover .hljs-title {
-        color: rgb(221, 221, 221) !important;
-        font-weight: normal;
-      }
-
-      .reveal pre code {
-        max-height: 800px !important;
-      }
-
-      .dna {
-        background-color: green;
-      }
-      .zome {
-        background-color: blue;
-      }
-      .coordinator-zomes {
-        background-color: lightblue;
-      }
-
-      .dna,
-      .cell,
-      .zome,
-      .coordinator-zomes,
-      .source-chain,
-      .happ-bundle,
-      .box,
-      .dna-bundle,
-      .dht-shard,
-      .conductor,
-      .happ {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 12px;
-        border-width: 3px;
-        border-color: rgb(209, 209, 209);
-        border-style: solid;
+        width: 1000px;
       }
     </style>
-    <link rel="stylesheet" href="holochain-lesson-5/bce6cb85.css">
-
-    <link rel="stylesheet" href="holochain-lesson-5/5265d60d.css">
-    <link rel="stylesheet" href="holochain-lesson-5/86125abe.css">
-    <title>Holochain Lesson 5</title>
+    <script type="module" crossorigin src="/holochain-lesson-1/assets/index-2042943e.js"></script>
+    <link rel="stylesheet" href="/holochain-lesson-1/assets/index-97b534d5.css">
   </head>
 
   <body>
     <div class="reveal">
       <div class="slides">
         <section>
-          <h1>Capability Tokens &amp; P2P Functionality</h1>
+          <h1>Capability Tokens & P2P Functionality</h1>
         </section>
 
         <section>
-          <h3>Zome Calls</h3>
+          <!-- prettier-ignore -->
+          <fragment language="markdown" animate="by-line with-ancestry">
+            ### Zome Calls
 
-          <li class="fragment fade-in-then-semi-out">
-            Zome calls have a unified security model
-            <ul>
-              <li class="fragment fade-in-then-semi-out">
-                Protects all zome calls independently of where they originated
-                (externally or within the conductor)
-              </li>
-            </ul>
-          </li>
-
-          <li class="fragment fade-in-then-semi-out">
-            When the conductor receives a zome call request, it checks whether
-            it complies with the security checks:
-
-            <ul>
-              <li class="fragment fade-in-then-semi-out">
-                If the call is signed by the agent with the public key for the
-                cell, the call is accepted and executed
-              </li>
-              <li class="fragment fade-in-then-semi-out">
-                If not, the conductor looks up the source chain for that cell
-                for <strong>capability tokens</strong> for the requested
-                function
-                <ul>
-                  <li class="fragment fade-in-then-semi-out">
-                    If some capability grant allows the request, it is executed
-                  </li>
-                  <li class="fragment fade-in-then-semi-out">
-                    Otherwise, the request is rejected
-                  </li>
-                </ul>
-              </li>
-            </ul>
-          </li>
+            - Zome calls have a unified security model
+              - Protects all zome calls independently of where they originated (externally or within the conductor)
+            - When the conductor receives a zome call request, it checks whether it complies with the security checks:
+              - If the call is signed by the agent with the public key for the cell, the call is accepted and executed
+              - If not, the conductor looks up the source chain for that cell for **capability tokens** for the requested function
+                  - If some capability grant allows the request, it is executed
+                  - Otherwise, the request is rejected
+          </fragment>
         </section>
 
         <section>
-          <h3>Capability Tokens (I)</h3>
+          <!-- prettier-ignore -->
+          <fragment language="markdown" animate="by-line with-ancestry">
+            ### Capability Tokens (I)
 
-          <li class="fragment fade-in-then-semi-out">
-            Private entries that manage authorization to execute zome calls by
-            sources external to the cell
-          </li>
-          <li class="fragment fade-in-then-semi-out">
-            Two types of private entries:
-            <ul>
-              <li class="fragment fade-in-then-semi-out">
-                Capability Grants
-                <ul>
-                  <li class="fragment fade-in-then-semi-out">
-                    Stored by the grantor of the zome call request
-                  </li>
-                  <li class="fragment fade-in-then-semi-out">
-                    Allow an external source to execute a zome call request
-                  </li>
-                  <li class="fragment fade-in-then-semi-out">
-                    When they are deleted, that grant is no longer taken into
-                    account in the security checks
-                  </li>
-                  <li class="fragment fade-in-then-semi-out">
-                    This means that the cell is always in control of the grants
-                    that it makes to external sources
-                  </li>
-                </ul>
-              </li>
-              <li class="fragment fade-in-then-semi-out">
-                Capability Claim
-                <ul>
-                  <li class="fragment fade-in-then-semi-out">
-                    Stored by the grantee of the capability
-                  </li>
-                  <li class="fragment fade-in-then-semi-out">
-                    These don't provide access to external zome call requests
-                  </li>
-                  <li class="fragment fade-in-then-semi-out">
-                    Mostly a convenience entry type just to store information
+            - Private entries that manage authorization to execute zome calls by sources external to the cell
+            - Two types of private entries:
+              - Capability Grants
+                - Stored by the grantor of the zome call request
+                - Allow an external source to execute a zome call request
+                - When they are deleted, that grant is no longer taken into account in the security checks
+                -  This means that the cell is always in control of the grants that it makes to external sources
+              - Capability Claim
+                - Stored by the grantee of the capability
+                - These don't provide access to external zome call requests
+                - Mostly a convenience entry type just to store information
                     about the Capability Grant
-                  </li>
-                </ul>
-              </li>
-              <li class="fragment fade-in-then-semi-out">
-                Both can be created as any other entry, at any point in time
-              </li>
-            </ul>
-          </li>
+              - Both can be created as any other entry, at any point in time
+          </fragment>
         </section>
 
         <section>
-          <h3>Capability Tokens (II)</h3>
+          <!-- prettier-ignore -->
+          <fragment language="markdown" animate="by-line with-ancestry">
+            ### Capability Tokens (II)
 
-          <h4>Types of Capability Grant</h4>
+            #### Types of Capability Grant
 
-          <li class="fragment fade-in-then-semi-out">
-            Unrestricted: disable security checks
-            <ul>
-              <li class="fragment fade-in-then-semi-out">
-                Any call to the function coming from any source will be executed
-              </li>
-              <li class="fragment fade-in-then-semi-out">
-                This can be a huge security risk, so we generally don't grant
-                unrestricted capability grants unless there is a really good
-                reason
-              </li>
-            </ul>
-          </li>
-
-          <li class="fragment fade-in-then-semi-out">
-            Transferable: any source that knows a specific secret
-            <ul>
-              <li class="fragment fade-in-then-semi-out">
-                The zome call must carry a secret
-              </li>
-              <li class="fragment fade-in-then-semi-out">
-                Only the calls that carry the secret specified in the capability
-                token will be executed
-              </li>
-              <li class="fragment fade-in-then-semi-out">
-                The secret can be stored in the source chain of the caller with
-                a "Capability Claim" entry
-              </li>
-            </ul>
-          </li>
-
-          <li class="fragment fade-in-then-semi-out">
-            Assigned to specific agents
-            <ul>
-              <li class="fragment fade-in-then-semi-out">
-                The zome call must carry the agent public key of the caller and
-                its signature and also a capability secret
-              </li>
-              <li class="fragment fade-in-then-semi-out">
-                Only the calls that a) carry the secret specified and b) are made by
-                one of the agents specified in the capability token are allowed to make the
-                call
-              </li>
-            </ul>
-          </li>
+            - Unrestricted: disable security checks
+              - Any call to the function coming from any source will be executed
+              - This can be a huge security risk, so we generally don't grant unrestricted capability grants unless there is a really good reason
+            - Transferable: any source that knows a specific secret
+              - The zome call must carry a secret
+              - Only the calls that carry the secret specified in the capability token will be executed
+              - The secret can be stored in the source chain of the caller with a "Capability Claim" entry
+            - Assigned to specific agents
+              - The zome call must carry the agent public key of the caller and its signature and also a capability secret
+              - Only the calls that a) carry the secret specified and b) are made by one of the agents specified in the capability token are allowed to make the call
+          </fragment>
         </section>
 
         <section>
           <h3>Capability Tokens (III)</h3>
-          <h4>Create unrestricted grant</h4>
+          <h4>Declaring the functions to grant capabilities for</h4>
 
-          <pre class="fragment fade-in"><code class="rust" data-noescape=""><span class="fragment fade-in-then-semi-out">use hdk::prelude::*;
+          <fragment>
+            <!-- prettier-ignore -->
+            <pre><code class="rust" data-noescape data-trim animate="by-line with-ancestry balanced separate-comments trailing-comments-in-popover strike-on-error-in-comment">
+use hdk::prelude::*;
 
-<span class="fragment fade-in">#[hdk_extern]
-fn zome_function_a(input: String)<span class="fragment fade-in-then-out popover">We want to grant a capability to execute this function</span> -&gt; ExternResult&lt;ActionHash&gt; { <span class="fragment fade-in">/* Create, create links, get, query... */</span> } </span>
-
-<span class="fragment fade-in"><span class="fragment fade-in">// Which functions do we grant access to? </span>
-fn functions_to_grant_capability_for() -&gt; ExternResult&lt;GrantedFunctions&gt;<span class="fragment fade-in-then-out popover">Type required by the API to specify the functions</span> { <span class="fragment fade-in">// Type required by the HDK API</span>
-  <span class="fragment fade-in">let zome_name = zome_info()?.name; // Getting the zome name</span>
-  <span class="fragment fade-in">let function_name = FunctionName<span class="fragment fade-in-then-out popover">Just a wrapper around a "String"</span>(String::from("zome_function_a"));</span><span class="fragment fade-in"> // Wrapper around a "String"</span>
-
-  <span class="fragment fade-in">let mut functions: BTreeSet&lt;(ZomeName, FunctionName)&gt; = BTreeSet::new();</span>
-  <span class="fragment fade-in">functions.insert((zome_name, function_name));<span class="fragment fade-in-then-out popover">We want to grant access to the zome function "zome_function_a" of this zome</span></span><span class="fragment fade-in"> // Granting access to the function in this zome</span>
-
-  <span class="fragment fade-in">Ok(GrantedFunctions::Listed<span class="fragment fade-in-then-out popover">Can be "Listed" specific zome functions or "All" zome functions </span>(functions))</span> <span class="fragment fade-in">// Can be "Listed" functions or "All" functions</span>
-}</span>
-
-<span class="fragment fade-in">#[hdk_extern]
-fn grant_unrestricted_capability(_: ()) -&gt; ExternResult&lt;()&gt; {
-  <span class="fragment fade-in">let functions = functions_to_grant_capability_for();</span>
-
-  <span class="fragment fade-in">let access = CapAccess::Unrestricted;<span class="fragment fade-in-then-out popover">Anyone can call this function, even unidentified sources</span></span><span class="fragment fade-in"> // Can be called from any source</span>
-
-  <span class="fragment fade-in">let capability_grant = CapGrantEntry<span class="fragment fade-in-then-out popover">Private entry built-in to Holochain and the HDK</span> { <span class="fragment fade-in"> // Built-in private entry</span>
-    <span class="fragment fade-in">functions,</span>
-    <span class="fragment fade-in">access,</span>
-    <span class="fragment fade-in">tag: String::from("unrestricted"),<span class="fragment fade-in-then-out popover">Arbitrary humand readable tag, just for convenience</span></span><span class="fragment fade-in"> // Convenience tag</span>
-  };</span>
-
-  <span class="fragment fade-in">create_cap_grant(capability_grant)?;<span class="fragment fade-in-then-out popover">Actually commit the capability: now "zome_function_a" can be called from any source</span></span> <span class="fragment fade-in">// Actually commit the capability</span>
-
-  <span class="fragment fade-in">Ok(())</span>
+#[hdk_extern]
+fn zome_function_a(input: String) -> ExternResult&lt;ActionHash&gt; { // We want to grant 
+                                                                // a capability to 
+                                                                // execute this function
+  // Create, create links, get, query... 
 }
-</span>
+ 
+// Declares which functions we want to grant access to
+fn functions_to_grant_capability_for() -> ExternResult&lt;GrantedFunctions&gt; { // Type required 
+                                                                           // to specify 
+                                                                           // the functions
+  let zome_name = zome_info()?.name; // Getting the zome name
+  let fn_name = FunctionName::from("zome_function_name"); // Just a wrapper around a "String"
+                                                          // (String::from("zome_function_a"))
 
-</span></code></pre>
+  let mut functions: BTreeSet&lt;(ZomeName, FunctionName)&gt; = BTreeSet::new();
+  functions.insert((zome_name, fn_name)); // Grant access to the zome function 
+                                          // "zome_function_a" of this zome
+
+  Ok(GrantedFunctions::Listed(functions)) // Can be "Listed" functions or "All" functions
+}
+</code></pre>
+          </fragment>
         </section>
 
         <section>
           <h3>Capability Tokens (IV)</h3>
-          <h4>Create transferable grant</h4>
+          <h4>Create unrestricted grant</h4>
 
-          <pre class="fragment fade-in"><code class="rust" data-noescape=""><span class="fragment fade-in"><span class="fragment fade-in">// Which secret do they need to know to call those functions? </span>
-fn cap_secret() -&gt; ExternResult&lt;CapSecret&gt;<span class="fragment fade-in-then-out popover">Wrapper around a byte array</span> { <span class="fragment fade-in">// Wrapper around a byte array</span>
-  <span class="fragment fade-in">let bytes = random_bytes(64)?;</span>
-  <span class="fragment fade-in">let secret = CapSecret::try_from(bytes.into_vec())
-      .map_err(|_| wasm_error!(WasmErrorInner::Guest("Could not build secret".into())))?;</span>
+          <fragment>
+            <!-- prettier-ignore -->
+            <pre><code class="rust" data-noescape data-trim animate="by-line with-ancestry balanced separate-comments trailing-comments-in-popover strike-on-error-in-comment">
+use hdk::prelude::*;
 
-  <span class="fragment fade-in">Ok(secret)</span>
-}</span>
+#[hdk_extern]
+fn grant_unrestricted_capability(_: ()) -> ExternResult&lt;()&gt; {
+  let functions = functions_to_grant_capability_for(); // Declared in the previous slide
 
-<span class="fragment fade-in">#[hdk_extern]
-fn grant_transferable_capability(_: ()) -&gt; ExternResult&lt;CapSecret&gt; {
-  <span class="fragment fade-in">let secret = cap_secret()?;</span>
+  let access = CapAccess::Unrestricted; // Anyone can call this function, 
+                                        // even unidentified sources
 
-  <span class="fragment fade-in">let access = CapAccess::Transferable {<span class="fragment fade-in-then-out popover">Only requests that carry this secret will be able to execute "zome_function_a"</span><span class="fragment fade-in"> // Requests are required to carry this secret</span>
-    secret,
-  };</span>
-  <span class="fragment fade-in">let capability_grant = CapGrantEntry {
-    <span class="fragment fade-in">functions: functions_to_grant_capability_for(),</span>
-    <span class="fragment fade-in">access,</span>
-    <span class="fragment fade-in">tag: String::from("transferable capability"), // Convenience tag</span>
-  };</span>
+  let capability_grant = CapGrantEntry { // Private entry built-in to Holochain and the HDK
+    functions,
+    access,
+    tag: String::from("unrestricted"), // Arbitrary humand readable tag, just for convenience
+  };
 
-  <span class="fragment fade-in">create_cap_grant(capability_grant)?;</span>
-
-  <span class="fragment fade-in">Ok(secret)</span>
+  create_cap_grant(capability_grant)?; // Actually commit the capability
+                                       // From this point on, "zome_function_a" 
+                                       // can be called from any source
+  Ok(())
 }
-</span>
-
 </code></pre>
+          </fragment>
         </section>
 
         <section>
           <h3>Capability Tokens (V)</h3>
-          <h4>Create assigned grant</h4>
+          <h4>Create transferable grant</h4>
 
-          <pre class="fragment fade-in"><code class="rust" data-noescape=""><span class="fragment fade-in">use hdk::prelude::*;
+          <pre
+            class="fragment fade-in"
+          ><code class="rust" data-noescape data-trim 
+animate="by-line with-ancestry balanced separate-comments trailing-comments-in-popover strike-on-error-in-comment">
+// Generate a random capability secret to give to a the granted agent
+fn cap_secret() -> ExternResult&lt;CapSecret&gt; { // "CapSecret" is a wrapper around a byte array
+  let bytes = random_bytes(64)?; // "random_bytes" is a utility function from the HDK
+  let secret = CapSecret::try_from(bytes.into_vec())
+      .map_err(|_| wasm_error!(WasmErrorInner::Guest("Could not build secret".into())))?;
 
-<span class="fragment fade-in">#[hdk_extern]
-fn grant_assigned_capability(authorized_agent: AgentPubKey) -&gt; ExternResult&lt;()&gt; {
-
-  <span class="fragment fade-in">/* To whom do we grant access to those functions? */</span>
-  <span class="fragment fade-in">let mut assignees: BTreeSet&lt;AgentPubKey&gt;<span class="fragment fade-in-then-out popover">Type required by the API to specify the granted agents</span> = BTreeSet::new();</span>
-  <span class="fragment fade-in">assignees.insert(authorized_agent);<span class="fragment fade-in-then-out popover">Assigning the authorized_agent</span></span><span class="fragment fade-in"> // Assign capabilty to the given "authorized_agent"</span>
-
-  <span class="fragment fade-in">let access = CapAccess::Assigned {<span class="fragment fade-in-then-out popover">Only requests that <strong>both</strong> carry this secret and are signed by any of the assignees will be able to execute "zome_function_a"</span><span class="fragment fade-in"> // Requests are required to carry this secret and be signed by one of the assignees</span>
-    secret: cap_secret()?,
-    assignees
-  };</span>
-  <span class="fragment fade-in">let capability_grant = CapGrantEntry {
-    <span class="fragment fade-in">functions: functions_to_grant_capability_for(),</span>
-    <span class="fragment fade-in">access,</span>
-    <span class="fragment fade-in">tag: String::from("assigned capability"), // Convenience tag</span>
-  };</span>
-
-  <span class="fragment fade-in">create_cap_grant(capability_grant)?;</span>
-
-  <span class="fragment fade-in">Ok(())</span>
+  Ok(secret)
 }
-</span>
 
-</span></code></pre>
+#[hdk_extern]
+fn grant_transferable_capability(_: ()) -> ExternResult&lt;CapSecret&gt; {
+  let secret = cap_secret()?;
+
+  let access = CapAccess::Transferable { 
+      secret, // Only requests that carry this secret will be able to execute "zome_function_a"
+  };
+  let capability_grant = CapGrantEntry {
+    functions: functions_to_grant_capability_for(),
+    access,
+    tag: String::from("transferable capability"), // Convenience tag
+  };
+
+  create_cap_grant(capability_grant)?;
+
+  Ok(secret)
+}
+</code></pre>
         </section>
 
         <section>
           <h3>Capability Tokens (VI)</h3>
-          <h4>Create capability claim</h4>
+          <h4>Create assigned grant</h4>
 
-          <pre class="fragment fade-in"><code class="rust" data-noescape=""><span class="fragment fade-in">use hdk::prelude::*;
+          <pre
+            class="fragment fade-in"
+          ><code class="rust" data-noescape data-trim animate="by-line with-ancestry balanced separate-comments trailing-comments-in-popover strike-on-error-in-comment">
+use hdk::prelude::*;
 
-<span class="fragment fade-in">#[hdk_extern]
-fn create_claim_for_zome_function_a(<span class="fragment fade-in">grant_data: (AgentPubKey, CapSecret)</span><span class="fragment fade-in-then-out popover">Provided by another process, maybe a bluetooth handshake</span>) -&gt; ExternResult&lt;()&gt; {
+#[hdk_extern]
+fn grant_assigned_capability(authorized_agent: AgentPubKey) -> ExternResult&lt;()&gt; {
 
-  <span class="fragment fade-in">let cap_claim = CapClaimEntry<span class="fragment fade-in-then-out popover">Private entry built-in to Holochain and the HDK</span> { <span class="fragment fade-in">// Built-in private entry</span>
-    <span class="fragment fade-in">grantor: grant_data.0,</span><span class="fragment fade-in-then-out popover">Just to remember which agent to call</span><span class="fragment fade-in"> // Just to remember which agent to call</span>
-    <span class="fragment fade-in">secret: grant_data.1,</span><span class="fragment fade-in-then-out popover">Store the secret to be able to add it to the request</span><span class="fragment fade-in"> // Store the secret</span>
-    <span class="fragment fade-in">tag: String::from("claim for zome_function_a"),<span class="fragment fade-in-then-out popover">Can be totally different from the tag in the capability grant</span><span class="fragment fade-in"> // Can be different from the tag in the grant</span></span>
-  };</span>
+  /* To whom do we grant access to those functions? */
 
-  <span class="fragment fade-in">create_cap_claim(cap_claim)?;</span><span class="fragment fade-in-then-out popover">Create the claim privately, nothing else happens</span><span class="fragment fade-in"> // Commit the claim privately</span>
+  let mut assignees: BTreeSet&lt;AgentPubKey&gt; = BTreeSet::new(); // Type required by the API 
+                                                              // to specify the granted agents
+  assignees.insert(authorized_agent); // Assign capabilty to the given "authorized_agent"
+
+  let access = CapAccess::Assigned {     
+    secret: cap_secret()?,
+    assignees              // Only requests that **both** carry this secret and are signed by 
+                           // any of the assignees will be able to execute "zome_function_a"
+  };
+  let capability_grant = CapGrantEntry {
+    functions: functions_to_grant_capability_for(),
+    access,
+    tag: String::from("assigned capability"), // Convenience tag
+  };
+
+  create_cap_grant(capability_grant)?;
 
   Ok(())
-}</span>
-</span></code></pre>
+}
+</code></pre>
         </section>
 
         <section>
           <h3>Capability Tokens (VII)</h3>
+          <h4>Create capability claim</h4>
+
+          <pre
+            class="fragment fade-in"
+          ><code class="rust" data-noescape data-trim
+animate="by-line with-ancestry balanced separate-comments trailing-comments-in-popover strike-on-error-in-comment"                              >
+use hdk::prelude::*;
+
+#[hdk_extern]
+fn create_claim_for_zome_function_a(
+  grant_data: (AgentPubKey, CapSecret) 
+) -> ExternResult&lt;()&gt; { // The "CapSecret" would be provided by another process, 
+                        // maybe a bluetooth handshake
+
+  let cap_claim = CapClaimEntry { // Private entry built-in to Holochain and the HDK
+    grantor: grant_data.0, // Just to remember which agent to call
+    secret: grant_data.1, // Store the secret to be able to add it to the request
+    tag: String::from("claim for zome_function_a"), // Can be totally different from the
+                                                    // tag in the capability grant
+  };
+
+  create_cap_claim(cap_claim)?; // Create the claim privately, nothing else happens
+
+  Ok(())
+}
+</code></pre>
+        </section>
+
+        <section>
+          <h3>Capability Tokens (VIII)</h3>
           <h4>Query the created capability claim</h4>
 
-          <fragment animate="by-line with-ancestry separate-comments balanced">
-            <pre>              <code class="rust" data-noescape="">use hdk::prelude::*;
+          <fragment>
+            <pre>
+              <code class="rust" data-noescape data-trim animate="by-line with-ancestry balanced separate-comments trailing-comments-in-popover strike-on-error-in-comment"          >
+use hdk::prelude::*;
 
 // Imagine we have already stored some CapClaims
 // and we want to retrieve all stored CapClaims from a certain grantor
-fn query_cap_claims_for(grantor: &amp;AgentPubKey) -&gt; ExternResult&lt;Vec&lt;CapClaim&gt;&gt; {
+fn query_cap_claims_for(grantor: &AgentPubKey) -> ExternResult&lt;Vec&lt;CapClaim&gt;&gt; {
   let claims_records = query(
     ChainQueryFilter::new()
       .entry_type(EntryType::CapClaim) // Only query Capability Claim related records
@@ -414,12 +272,14 @@ fn query_cap_claims_for(grantor: &amp;AgentPubKey) -&gt; ExternResult&lt;Vec&lt;
 
   let claims_from_grantor: Vec&lt;CapClaim&gt; = claims_records
     .into_iter()
-    .filter_map(|record| record.entry().as_option().cloned()) // Extract the entry from the record
+    .filter_map(|record| record.entry().as_option().cloned()) // Extract the entry 
+                                                              // from the record
     .filter_map(|entry| match entry {
-      Entry::CapClaim(claim) =&gt; Some(claim.clone()),
-      _ =&gt; None,
+      Entry::CapClaim(claim) => Some(claim.clone()), // Deserialize the entry to a "CapClaim"
+      _ => None,
     })
-    .filter(|claim| claim.grantor.eq(&amp;grantor)) // Only select the claims with the given grantor
+    .filter(|claim| claim.grantor.eq(&grantor)) // Only select the claims with 
+                                                // the given grantor
     .collect();
 
   Ok(claims_from_grantor)
@@ -429,38 +289,18 @@ fn query_cap_claims_for(grantor: &amp;AgentPubKey) -&gt; ExternResult&lt;Vec&lt;
         </section>
 
         <section>
-          <h3>3 Sources of Zome Calls</h3>
+          <!-- prettier-ignore -->
+          <fragment language="markdown" animate="by-line with-ancestry">
+            ### 3 Sources of Zome Calls
 
-          <li class="fragment fade-in-then-semi-out">
-            Conductor receives request on the application port
-            <ul>
-              <li class="fragment fade-in-then-semi-out">
-                Any process external to Holochain can bind to the application
-                port of the conductor using a websockets
-                <!-- TODO: fix when this has been clarified by Art -->
-              </li>
-              <li class="fragment fade-in-then-semi-out">Usually a web GUI</li>
-            </ul>
-          </li>
-          <li class="fragment fade-in-then-semi-out">
-            Bridge call
-            <ul>
-              <li class="fragment fade-in-then-semi-out">
-                Any cell in a conductor can call another cell in the same
-                conductor, by cell ID
-                <!-- TODO: fix when this has been clarified by Art -->
-              </li>
-            </ul>
-          </li>
-          <li class="fragment fade-in-then-semi-out">
-            Remote call
-            <ul>
-              <li class="fragment fade-in-then-semi-out">
-                Any cell in a network can call another cell in the same network,
-                by agent public key
-              </li>
-            </ul>
-          </li>
+            - Conductor receives request on the application port
+              - Any process external to Holochain can bind to the application port of the conductor using a websocket connection
+              - Usually a web GUI
+            - Bridge call
+              - Any cell in a conductor can call another cell in the same conductor, by cell ID
+            - Remote call
+              - Any cell in a network can call another cell in the same network, by agent public key
+          </fragment>
         </section>
 
         <!-- TODO: Example of JS UI call? -->
@@ -468,12 +308,18 @@ fn query_cap_claims_for(grantor: &amp;AgentPubKey) -&gt; ExternResult&lt;Vec&lt;
         <section>
           <h3>Bridged call</h3>
 
-          <fragment animate="by-line with-ancestry separate-comments balanced">
-            <pre>              <code class="rust" data-noescape="">
+          <fragment>
+            <pre>
+              <code class="rust" data-noescape data-trim
+animate="by-line with-ancestry balanced separate-comments trailing-comments-in-popover strike-on-error-in-comment"                        >
 #[hdk_extern]
-pub fn store_file(file_bytes: SerializedBytes) -&gt; ExternResult&lt;EntryHash&gt; {
+pub fn store_file(file_bytes: SerializedBytes) -> ExternResult&lt;EntryHash&gt; {
+  let cell_role_name = String::from("file_storage_provider");
   let zome_call_response = call(
-    CallTargetCell::OtherRole<span class="fragment fade-in-then-out popover">Can be "CallTargetCell::Local" to call the caller cell</span>(String::from("file_storage_provider")), // Must be one of the roles specified in the happ manifest
+    CallTargetCell::OtherRole(cell_role_name), // "CallTargetCell" can be: 
+                                               // - "OtherRole": must be one of the roles 
+                                               // specified in the happ manifest
+                                               // - "Local": calls the caller cell
     ZomeName::from(String::from("file_storage")), // Name of the zome to call
     FunctionName(String::from("store_file")), // Name of the zome function to call
     None, // Capability secret, if necessary
@@ -483,14 +329,18 @@ pub fn store_file(file_bytes: SerializedBytes) -&gt; ExternResult&lt;EntryHash&g
   let agent_pubkey = agent_info()?.agent_latest_pubkey;
 
   match zome_call_response {
-    ZomeCallResponse::Ok(result<span class="fragment fade-in-then-out popover">Of type ExternIO, wrapper around byte array</span>) =&gt; { // ExternIO is a wrapper around a byte array
-      let entry_hash: EntryHash = result.decode()<span class="fragment fade-in-then-out popover">".decode()" deserializes the byte array, trying to interpret it as the requested type</span>.map_err(|err| wasm_error!(String::from(err)))?; // Deserialize byte array
+    ZomeCallResponse::Ok(result) => { // Of type ExternIO, wrapper around byte array
+      let entry_hash: EntryHash = result.decode()  // ".decode()" deserializes the byte array, 
+                                                   // trying to interpret it as the requested typing
+        .map_err(|err| wasm_error!(String::from(err)))?;
       Ok(entry_hash)
     },
-    ZomeCallResponse::Unauthorized(cell_id, zome_name, function_name, callee, agent_pubkey) =&gt; {<span class="fragment fade-in-then-out popover">Callee deleted the capability grant before us tried to call id</span> // Callee deleted the capability grant
+    ZomeCallResponse::Unauthorized( // Callee deleted the capability grant before us tried to call it
+      cell_id, zome_name, function_name, callee, agent_pubkey
+    ) => {
       Err(wasm_error!(WasmErrorInner::Guest("Agent revoked the capability".into())))
     },
-    _ =&gt; {
+    _ => {
       Err(wasm_error!(WasmErrorInner::Guest(format!("There was an error by call: {:?}", zome_call_response))))
     },
   }
@@ -498,144 +348,156 @@ pub fn store_file(file_bytes: SerializedBytes) -&gt; ExternResult&lt;EntryHash&g
               </code>
             </pre>
           </fragment>
-
         </section>
 
         <section>
           <h3>Remote call</h3>
 
-          <fragment animate="by-line with-ancestry separate-comments balanced">
-          <pre class="fragment fade-in"><code class="rust" data-noescape="">use hdk::prelude::*;
+          <fragment>
+            <pre
+              class="fragment fade-in"
+            ><code class="rust" data-noescape data-trim
+animate="by-line with-ancestry balanced separate-comments trailing-comments-in-popover strike-on-error-in-comment">
+use hdk::prelude::*;
 
+// Defined in the "Capability Tokens (VIII) slide"
+fn query_cap_claims_for(grantor: &AgentPubKey) -> ExternResult&lt;Vec&lt;CapClaim&gt;&gt; {}
+
+// Call "zome_function_a" from the "callee"'s cell and return its result
 #[hdk_extern]
-fn zome_function_a(input: String)<span class="fragment fade-in-then-out popover">We want to grant a capability to execute this function</span> -&gt; ExternResult&lt;ActionHash&gt; { /* Create, create links, get, query... */ }
-
-fn query_cap_claims_for(grantor: &amp;AgentPubKey) -&gt; ExternResult&lt;Vec&lt;CapClaim&gt;&gt; {
-  // Defined in the "Capability Tokens (VII) slide"
-}
-
-// Call "callee"'s "zome_function_a" and return its result
-#[hdk_extern]
-fn call_zome_function_a(callee: AgentPubKey)<span class="fragment fade-in-then-out popover">We want to call "zome_function_a" in the "callee"'s cell and return its result</span> -&gt; ExternResult&lt;ActionHash&gt; {
-  let cap_claim_entry: CapClaimEntry = query_cap_claims_for(&amp;callee)?
-    .ok_or(wasm_error!(WasmErrorInner::Guest(String::from("There are no CapClaims for this grantor"))))?;
+fn call_zome_function_a(callee: AgentPubKey) -> ExternResult&lt;ActionHash&gt; { 
+  let cap_claim_entry: CapClaimEntry = query_cap_claims_for(&callee)?
+    .ok_or(wasm_error!(WasmErrorInner::Guest(String::from("No CapClaims for this grantor"))))?;
 
   let zome_call_response = call_remote(
-    callee,<span class="fragment fade-in-then-out popover">The agent we are calling, must be a participant in this network</span> // Peer in this network we are calling
-    zome_name()?.name,<span class="fragment fade-in-then-out popover">We are calling a function defined in this zome</span> // We are calling a function defined in this zome
-    FunctionName(String::from("zome_function_a")),<span class="fragment fade-in-then-out popover">The name of the function we are calling</span> // Function name
-    Some(cap_claim_entry.secret),<span class="fragment fade-in-then-out popover">The capability secret that we committed privately as the claim</span> // Cap secret
-    String::from("example input")<span class="fragment fade-in-then-out popover">Input parameter for the function, must derive "Serialize" and "Deserialize"</span> // Input parameter
+    callee, // The agent we are calling, must be a participant in this network
+    zome_name()?.name, // We are calling a function defined in this zome
+    FunctionName(String::from("zome_function_a")), // The name of the function we are calling    
+    Some(cap_claim_entry.secret), // The "CapSecret" that we committed privately as the claim
+    String::from("example input") // Zome function input must derive "Serialize" and "Deserialize"
   )?;
 
-  match zome_call_response<span class="fragment fade-in-then-out popover">Same type as the response from a bridged call</span> { // zome_call_response is the same type than in the bridged call response
-    ZomeCallResponse::Ok(result) =&gt; {
+  match zome_call_response{ // "zome_call_response" is the same type than in the bridged call response
+    ZomeCallResponse::Ok(result) => {
       let action_hash: ActionHash = result.decode().map_err(|err| wasm_error!(err))?;
       Ok(action_hash)
     },
-    ZomeCallResponse::NetworkError(err) =&gt; {
+    ZomeCallResponse::NetworkError(err) => {
       Err(wasm_error!(WasmErrorInner::Guest(format!("There was a network error: {:?}", err))))
     },
-    _ =&gt; Err(wasm_error!(WasmErrorInner::Guest(
+    _ => Err(wasm_error!(WasmErrorInner::Guest(
         "Failed to handle remote call".into()
     ))),
   }
 }
 </code></pre>
-  </fragment>
-</section>
+          </fragment>
+        </section>
 
-<section>
-  <fragment language="markdown" animate="by-line with-ancestry">
-    ## call_info()
+        <section>
+          <!-- prettier-ignore -->
+          <fragment language="markdown" animate="by-line with-ancestry">
+      ## call_info()
 
-    - HDK function
-    - Returns information about the source of the zome call that's being executed
-  </fragment>
+      - HDK function
+      - Returns information about the source of the zome call that's being executed
+    </fragment>
 
-
-  <fragment animate="by-line with-ancestry separate-comments balanced">
-    <pre>      <code class="rust" data-noescape="">use hdk::prelude::*;
+          <fragment>
+            <pre>
+      <code class="rust" data-noescape data-trim animate="by-line with-ancestry balanced separate-comments trailing-comments-in-popover strike-on-error-in-comment">
+use hdk::prelude::*;
 
 #[hdk_extern]
-fn request_retrieve_private_entries<span class="fragment popover fade-in-then-out">This function can be called via call_remote</span>(_: ()) -&gt; ExternResult&lt;Record&gt; {
+fn request_retrieve_private_entries(_: ()) -> ExternResult&lt;Record&gt; { // This function could 
+                                                                     // be called via 
+                                                                     // call_remote
   let info = call_info()?;
 
   let caller: AgentPubKey = info.provenance;
   match info.cap_grant {
-    CapGrant::ChainAuthor(my_pub_key) =&gt; {}, // The cell's agent called this function
-    CapGrant::RemoteAgent(zome_call_cap_grant) =&gt; {}  // An external agent called this function via call or call_remote,
-                                            // and it was authorized because this "zome_call_cap_grant" exists in the source chain for this cell
+    CapGrant::ChainAuthor(my_pub_key) => {}, // The cell's agent called this function
+    CapGrant::RemoteAgent(zome_call_cap_grant) => {} // An external agent called this function 
+                                                     // via call or call_remote, and it was 
+                                                     // authorized because this 
+                                                     // "zome_call_cap_grant" exists in the 
+                                                     // source chain for this cell
   }
 
   // ... execute the rest of the code
 }
 </code></pre>
-  </fragment>
-</section>
+          </fragment>
+        </section>
 
-<section>
-  <h3>Signals</h3>
+        <section>
+          <!-- prettier-ignore -->
+          <fragment language="markdown" animate="by-line with-ancestry">
+      ### Signals
 
-  <li class="fragment fade-in-then-semi-out">Don't wait for a response: fire and forget </li>
-  <li class="fragment fade-in-then-semi-out">Not reliable: signals can be lost without our code knowing </li>
-  <li class="fragment fade-in-then-semi-out">2 types:
+      - Don't wait for a response: fire and forget 
+      - Not reliable: signals can be lost without our code knowing 
+      - 2 types:
+        - Remote Signals
+          - Concurrent call to multiple agents 
+          - Very similar to "call_remote" 
+          - Useful for notifications 
 
-    <ul>
-      <li class="fragment fade-in-then-semi-out">Remote Signals
-        <ul>
-          <li class="fragment fade-in-then-semi-out">Concurrent call to multiple agents </li>
-          <li class="fragment fade-in-then-semi-out">Very similar to "call_remote" </li>
-          <li class="fragment fade-in-then-semi-out">Useful for notifications </li>
-
-        </ul>
-      </li>
-      <li class="fragment fade-in-then-semi-out">UI Signals
-        <ul>
-          <li class="fragment fade-in-then-semi-out">Send message from the conductor to all processes that are listening </li>
-
-        </ul>
-      </li>
-    </ul>
-  </li>
-
-
-</section>
+        - UI Signals
+          - Send message from the conductor to all processes that are listening 
+    </fragment>
+        </section>
 
         <section>
           <h3>Remote Signals</h3>
 
-          <pre class="fragment fade-in"><code class="rust" data-noescape=""><span class="fragment fade-in">use hdk::prelude::*;<!-- TODO: add recv_remote_signal if confirmed that it won't change-->
+          <pre
+            class="fragment fade-in"
+          ><code class="rust" data-noescape data-trim animate="by-line with-ancestry balanced separate-comments trailing-comments-in-popover strike-on-error-in-comment">
+use hdk::prelude::*;
 
-<span class="fragment fade-in">#[hdk_extern]
-fn notify(agents_to_notify: Vec&lt;AgentPubKey&gt;) -&gt; ExternResult&lt;()&gt; {
-  <span class="fragment fade-in">let input_string = String::from("input parameter");</span>
+#[hdk_extern]
+fn notify(agents_to_notify: Vec&lt;AgentPubKey&gt;) -> ExternResult&lt;()&gt; {
+  let input_string = String::from("input parameter");
 
-  <span class="fragment fade-in">remote_signal(input_string, agents_to_notify)?;</span><span class="fragment fade-in-then-out popover">Doesn't wait for the agents to receive the signal</span><span class="fragment fade-in"> // Doesn't wait </span>
+  remote_signal(input_string, agents_to_notify)?; // Doesn't wait for the agents 
+                                                  // to receive the signal
 
-  <span class="fragment fade-in">Ok(())</span>
+  Ok(())
 }
-</span>
 
-</span></code></pre></section>
+#[hdk_extern]
+fn recv_remote_signal(signal: String) -> ExternResult&lt;()&gt; { // Callback that holochain 
+                                                            // will execute in the 
+                                                            // callee's cell with 
+                                                            // the received signal
 
-
-<section>
-  <h3>UI Signals</h3>
-
-  <pre class="fragment fade-in"><code class="rust" data-noescape=""><span class="fragment fade-in">use hdk::prelude::*;
-
-<span class="fragment fade-in">#[hdk_extern]
-fn notify_ui(_: ()) -&gt; ExternResult&lt;()&gt; {
-  <span class="fragment fade-in">let input_string = String::from("input parameter");</span>
-
-  <span class="fragment fade-in">emit_signal(input_string)?;</span><span class="fragment fade-in-then-out popover">No other parameter other than the input because all the processes connected to the conductor will be notified</span><span class="fragment fade-in"> // Notify all processes connected to the conductor </span>
-
-  <span class="fragment fade-in">Ok(())</span>
+  // Handle the signal in the appropriate way
 }
-</span>
 
-</span></code></pre></section>
+</code></pre>
+        </section>
+
+        <section>
+          <h3>UI Signals</h3>
+
+          <pre
+            class="fragment fade-in"
+          ><code class="rust" data-noescape data-trim animate="by-line with-ancestry balanced separate-comments trailing-comments-in-popover strike-on-error-in-comment">
+use hdk::prelude::*;
+
+#[hdk_extern]
+fn notify_ui(_: ()) -> ExternResult&lt;()&gt; {
+  let input_string = String::from("input parameter");
+
+  emit_signal(input_string)?; // No other parameter other than the input because 
+                              // all the processes connected to the conductor 
+                              // will be notified
+
+  Ok(())
+}
+</code></pre>
+        </section>
 
         <section>
           <h1>That's it!</h1>
@@ -644,6 +506,5 @@ fn notify_ui(_: ()) -&gt; ExternResult&lt;()&gt; {
     </div>
 
     
-  
-
-<script type="module" src="./holochain-lesson-5/20300e74.js"></script></body></html>
+  </body>
+</html>
