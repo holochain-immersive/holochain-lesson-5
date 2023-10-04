@@ -372,6 +372,7 @@ fn query_cap_claims_for(grantor: &AgentPubKey) -> ExternResult&lt;Vec&lt;CapClai
 fn call_zome_function_a(callee: AgentPubKey) -> ExternResult&lt;ActionHash&gt; { 
   let cap_claim_entry: CapClaimEntry = query_cap_claims_for(&callee)?
     .first()
+    .cloned()
     .ok_or(wasm_error!(WasmErrorInner::Guest(String::from("No CapClaims for this grantor"))))?;
 
   let zome_call_response = call_remote(
