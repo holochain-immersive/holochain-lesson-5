@@ -131,7 +131,7 @@ use hdk::prelude::*;
 
 #[hdk_extern]
 fn grant_unrestricted_capability(_: ()) -> ExternResult&lt;()&gt; {
-  let functions = functions_to_grant_capability_for(); // Declared in the previous slide
+  let functions = functions_to_grant_capability_for()?; // Declared in the previous slide
 
   let access = CapAccess::Unrestricted; // Anyone can call this function, 
                                         // even unidentified sources
@@ -176,7 +176,7 @@ fn grant_transferable_capability(_: ()) -> ExternResult&lt;CapSecret&gt; {
       secret, // Only requests that carry this secret will be able to execute "zome_function_a"
   };
   let capability_grant = CapGrantEntry {
-    functions: functions_to_grant_capability_for(),
+    functions: functions_to_grant_capability_for()?,
     access,
     tag: String::from("transferable capability"), // Convenience tag
   };
@@ -212,7 +212,7 @@ fn grant_assigned_capability(authorized_agent: AgentPubKey) -> ExternResult&lt;(
                            // any of the assignees will be able to execute "zome_function_a"
   };
   let capability_grant = CapGrantEntry {
-    functions: functions_to_grant_capability_for(),
+    functions: functions_to_grant_capability_for()?,
     access,
     tag: String::from("assigned capability"), // Convenience tag
   };
