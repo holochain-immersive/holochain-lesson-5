@@ -57,12 +57,11 @@
                 - Stored by the grantor of the zome call request
                 - Allow an external source to execute a zome call request
                 - When they are deleted, that grant is no longer taken into account in the security checks
-                -  This means that the cell is always in control of the grants that it makes to external sources
+                - This means that the cell is always in control of the grants that it makes to external sources
               - Capability Claim
                 - Stored by the grantee of the capability
-                - These don't provide access to external zome call requests
-                - Mostly a convenience entry type just to store information
-                    about the Capability Grant
+                - They are not checked by the conductor to check whether an external zome call requests is valid
+                - Mostly a convenience entry type just to store information about the Capability Grant
               - Both can be created as any other entry, at any point in time
           </fragment>
         </section>
@@ -90,7 +89,7 @@
         <section>
           <h3>Capability Tokens (III)</h3>
           <h4>Declaring the functions to grant capabilities for</h4>
-
+          <!-- TODO: combine this slide with the next one via two columns? -->
           <fragment>
             <!-- prettier-ignore -->
             <pre><code class="rust" data-noescape data-trim animate="by-line with-ancestry balanced separate-comments trailing-comments-in-popover strike-on-error-in-comment">
@@ -108,7 +107,7 @@ fn functions_to_grant_capability_for() -> ExternResult&lt;GrantedFunctions&gt; {
                                                                            // to specify 
                                                                            // the functions
   let zome_name = zome_info()?.name; // Getting the zome name
-  let fn_name = FunctionName::from("zome_function_name"); // Just a wrapper around a "String"
+  let fn_name = FunctionName::from("zome_function_a"); // Just a wrapper around a "String"
                                                           // (String::from("zome_function_a"))
 
   let mut functions: BTreeSet&lt;(ZomeName, FunctionName)&gt; = BTreeSet::new();
@@ -124,7 +123,7 @@ fn functions_to_grant_capability_for() -> ExternResult&lt;GrantedFunctions&gt; {
         <section>
           <h3>Capability Tokens (IV)</h3>
           <h4>Create unrestricted grant</h4>
-
+          <!-- TODO: Combine all the types of the capatibilitytoken example where we only change the different code and keep the boilerplate common code -->
           <fragment>
             <!-- prettier-ignore -->
             <pre><code class="rust" data-noescape data-trim animate="by-line with-ancestry balanced separate-comments trailing-comments-in-popover strike-on-error-in-comment">
@@ -322,8 +321,10 @@ pub fn store_file(file_bytes: SerializedBytes) -> ExternResult&lt;EntryHash&gt; 
     CallTargetCell::OtherRole(cell_role_name), // "CallTargetCell" can be: 
                                                // - "OtherRole": must be one of the roles 
                                                // specified in the happ manifest
+                                               // - "OtherCell": call an arbitrary 
+                                               // cell with its cell ID
                                                // - "Local": calls the caller cell
-    ZomeName::from(String::from("file_storage")), // Name of the zome to call
+    ZomeName::from(String::from("file_storage")), // Name of t; he zome to call
     FunctionName(String::from("store_file")), // Name of the zome function to call
     None, // Capability secret, if necessary
     file_bytes, // Input for the zome function
@@ -338,7 +339,7 @@ pub fn store_file(file_bytes: SerializedBytes) -> ExternResult&lt;EntryHash&gt; 
         .map_err(|err| wasm_error!(String::from(err)))?;
       Ok(entry_hash)
     },
-    ZomeCallResponse::Unauthorized( // Callee deleted the capability grant before us tried to call it
+    ZomeCallResponse::Unauthorized( // Callee deleted the capability grant before we called it
       cell_id, zome_name, function_name, callee, agent_pubkey
     ) => {
       Err(wasm_error!(WasmErrorInner::Guest("Agent revoked the capability".into())))
